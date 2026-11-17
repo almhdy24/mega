@@ -29,6 +29,7 @@ jobs:
       - name: Run Android unit tests
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew testReleaseUnitTest
 
   release:
