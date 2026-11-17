@@ -112,5 +112,15 @@
   "onboardingGrantButton": "منح إذن الوصول للاستهلاك",
   "onboardingNext": "التالي",
   "onboardingSkip": "تخطي",
-  "onboardingStartUsing": "ابدأ استخدام ميقا"
+  "onboardingStartUsing": "ابدأ استخدام ميقا",
+  "speedServer": "خادم الفحص",
+  "speedModeQuick": "سريع (~4 ميجابايت)",
+  "speedModeFull": "كامل (~20 ميجابايت)",
+  "speedStabilityExcellent": "ممتاز",
+  "speedStabilityGood": "مستقر",
+  "speedStabilityUnstable": "متذبذب",
+  "liveNotificationTitle": "الإشعار الحي وعداد السرعة",
+  "liveNotificationDesc": "عرض السرعة الحية في شريط الحالة وإشعار مستمر",
+  "liveNotificationSettings": "إعدادات الإشعار الحي",
+  "liveNotificationBatteryHelp": "إذا اختفى الإشعار الحي"
 }

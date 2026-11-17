@@ -112,5 +112,15 @@
   "onboardingGrantButton": "Grant Usage Access",
   "onboardingNext": "Next",
   "onboardingSkip": "Skip",
-  "onboardingStartUsing": "Start Using MEGA"
+  "onboardingStartUsing": "Start Using MEGA",
+  "speedServer": "Test Server",
+  "speedModeQuick": "Quick (~4 MB)",
+  "speedModeFull": "Full (~20 MB)",
+  "speedStabilityExcellent": "Excellent",
+  "speedStabilityGood": "Good",
+  "speedStabilityUnstable": "Unstable",
+  "liveNotificationTitle": "Live Speed & Notification",
+  "liveNotificationDesc": "Show live speed in status bar and ongoing notification",
+  "liveNotificationSettings": "Live Notification Settings",
+  "liveNotificationBatteryHelp": "If Live Notification Disappears"
 }

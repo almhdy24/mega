@@ -7,6 +7,7 @@ import '../../../core/time/bundle_period.dart';
 import '../../../core/time/day_range.dart';
 import '../../speedtest/data/speed_test_engine.dart';
 import '../../speedtest/data/speedtest_repository.dart';
+import '../../speedtest/domain/speed_server.dart';
 import '../../speedtest/domain/speed_test_record.dart';
 import '../../usage/data/usage_repository.dart';
 import '../../usage/domain/past_bundle.dart';
@@ -180,7 +181,7 @@ class HomeViewModel extends ChangeNotifier {
           downMbps: p.downMbps,
           upMbps: p.upMbps,
           networkType: netType,
-          server: settings.testBaseUrl,
+          server: p.server?.name ?? settings.selectedServer.name,
         );
         await speedRepository.insertTest(record);
         _lastSpeed = record;
@@ -192,7 +193,10 @@ class HomeViewModel extends ChangeNotifier {
       }
     });
 
-    await _quickEngine!.runTest(baseUrl: settings.testBaseUrl);
+    await _quickEngine!.runTest(
+      server: settings.selectedServer,
+      mode: SpeedTestMode.quick,
+    );
   }
 
   void cancelQuickTest() {

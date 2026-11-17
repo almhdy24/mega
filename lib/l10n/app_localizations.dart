@@ -589,6 +589,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start Using MEGA'**
   String get onboardingStartUsing;
+
+  /// No description provided for @speedServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Server'**
+  String get speedServer;
+
+  /// No description provided for @speedModeQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick (~4 MB)'**
+  String get speedModeQuick;
+
+  /// No description provided for @speedModeFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full (~20 MB)'**
+  String get speedModeFull;
+
+  /// No description provided for @speedStabilityExcellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get speedStabilityExcellent;
+
+  /// No description provided for @speedStabilityGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get speedStabilityGood;
+
+  /// No description provided for @speedStabilityUnstable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unstable'**
+  String get speedStabilityUnstable;
+
+  /// No description provided for @liveNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Speed & Notification'**
+  String get liveNotificationTitle;
+
+  /// No description provided for @liveNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show live speed in status bar and ongoing notification'**
+  String get liveNotificationDesc;
+
+  /// No description provided for @liveNotificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Notification Settings'**
+  String get liveNotificationSettings;
+
+  /// No description provided for @liveNotificationBatteryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'If Live Notification Disappears'**
+  String get liveNotificationBatteryHelp;
 }
 
 class _AppLocalizationsDelegate

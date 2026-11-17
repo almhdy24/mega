@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import '../domain/speed_math.dart';
+import '../domain/speed_server.dart';
+import 'speed_backends.dart';
 
 enum SpeedTestPhase {
   idle,
@@ -23,6 +25,8 @@ class SpeedTestProgress {
   final double upMbps;
   final double progressPercent; // 0.0 to 1.0
   final String? errorMessage;
+  final SpeedServer? server;
+  final SpeedTestMode mode;
 
   const SpeedTestProgress({
     required this.phase,
@@ -33,7 +37,11 @@ class SpeedTestProgress {
     this.upMbps = 0.0,
     this.progressPercent = 0.0,
     this.errorMessage,
+    this.server,
+    this.mode = SpeedTestMode.quick,
   });
+
+  SpeedStability get stability => stabilityRating(jitterMs);
 
   SpeedTestProgress copyWith({
     SpeedTestPhase? phase,
@@ -44,6 +52,8 @@ class SpeedTestProgress {
     double? upMbps,
     double? progressPercent,
     String? errorMessage,
+    SpeedServer? server,
+    SpeedTestMode? mode,
   }) {
     return SpeedTestProgress(
       phase: phase ?? this.phase,
@@ -54,6 +64,8 @@ class SpeedTestProgress {
       upMbps: upMbps ?? this.upMbps,
       progressPercent: progressPercent ?? this.progressPercent,
       errorMessage: errorMessage ?? this.errorMessage,
+      server: server ?? this.server,
+      mode: mode ?? this.mode,
     );
   }
 }
@@ -81,10 +93,8 @@ class SpeedTestEngine {
   }
 
   Future<SpeedTestProgress> runTest({
-    required String baseUrl,
-    String pingEndpoint = '/empty',
-    String downloadEndpoint = '/garbage?ckSize=20',
-    String uploadEndpoint = '/empty',
+    required SpeedServer server,
+    SpeedTestMode mode = SpeedTestMode.quick,
   }) async {
     _isCancelled = false;
     _closeClient();
@@ -93,38 +103,41 @@ class SpeedTestEngine {
     _client!.connectionTimeout = const Duration(seconds: 8);
     _client!.idleTimeout = const Duration(seconds: 15);
 
-    final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    var effectiveServer = server;
+    if (server.id == 'auto') {
+      try {
+        effectiveServer = await ServerProber.autoSelectBestServer();
+      } catch (_) {
+        effectiveServer = SpeedServers.megaServer;
+      }
+    }
 
-    var progress = const SpeedTestProgress(
+    if (_isCancelled) {
+      return const SpeedTestProgress(phase: SpeedTestPhase.cancelled);
+    }
+
+    var progress = SpeedTestProgress(
       phase: SpeedTestPhase.pinging,
       progressPercent: 0.05,
+      server: effectiveServer,
+      mode: mode,
     );
     _controller.add(progress);
 
     try {
-      // Auto-detect LibreSpeed PHP backends if /empty returns 404
-      var effectivePing = pingEndpoint;
-      var effectiveDown = downloadEndpoint;
-      var effectiveUp = uploadEndpoint;
+      final backend = SpeedBackend.forProtocol(effectiveServer.protocol);
+      final baseUri = Uri.parse(effectiveServer.baseUrl);
 
-      var pingUrl = Uri.parse('$cleanBase$effectivePing');
-      try {
-        final probeReq = await _client!.getUrl(pingUrl);
-        final probeRes = await probeReq.close();
-        await probeRes.drain<void>();
-        if (probeRes.statusCode == 404) {
-          effectivePing = '/empty.php';
-          effectiveDown = '/garbage.php?ckSize=20';
-          effectiveUp = '/empty.php';
-          pingUrl = Uri.parse('$cleanBase$effectivePing');
-        }
-      } catch (_) {}
+      final pingUrl = await backend.getPingUri(baseUri);
+      final ckSize = mode == SpeedTestMode.quick ? 4 : 16;
+      final downUrl = await backend.getDownloadUri(baseUri, ckSize: ckSize);
+      final upUrl = await backend.getUploadUri(baseUri);
 
       // 1. PING & JITTER
-      // 10 sequential requests over ONE kept-alive connection, discard first
+      final pingCount = mode == SpeedTestMode.quick ? 5 : 10;
       final rtts = <double>[];
 
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < pingCount; i++) {
         if (_isCancelled) return progress;
         final sw = Stopwatch()..start();
         final req = await _client!.getUrl(pingUrl);
@@ -134,13 +147,13 @@ class SpeedTestEngine {
         sw.stop();
 
         final rtt = sw.elapsedMicroseconds / 1000.0;
-        if (i > 0) {
-          // Discard first setup RTT
+        if (i > 0 || pingCount <= 3) {
+          // Discard first setup RTT if we have enough samples
           rtts.add(rtt);
         }
 
         progress = progress.copyWith(
-          progressPercent: 0.05 + (0.15 * (i + 1) / 10),
+          progressPercent: 0.05 + (0.15 * (i + 1) / pingCount),
         );
         _controller.add(progress);
       }
@@ -157,9 +170,10 @@ class SpeedTestEngine {
       _controller.add(progress);
 
       // 2. DOWNLOAD TEST
-      // 4 parallel streams, 10s cap, discard first 1.5s warm-up, sample every 200ms
-      final downUrl = Uri.parse('$cleanBase$effectiveDown');
-      final downMbps = await _runDownload(downUrl, progress);
+      final downDuration = mode == SpeedTestMode.quick
+          ? const Duration(seconds: 5)
+          : const Duration(seconds: 10);
+      final downMbps = await _runDownload(downUrl, progress, durationCap: downDuration);
       if (_isCancelled) return progress;
 
       progress = progress.copyWith(
@@ -170,9 +184,10 @@ class SpeedTestEngine {
       _controller.add(progress);
 
       // 3. UPLOAD TEST
-      // 3 parallel POST streams, 8s cap, same warm-up & 200ms sampling, reuse one pre-generated buffer
-      final upUrl = Uri.parse('$cleanBase$effectiveUp');
-      final upMbps = await _runUpload(upUrl, progress);
+      final upDuration = mode == SpeedTestMode.quick
+          ? const Duration(seconds: 3)
+          : const Duration(seconds: 8);
+      final upMbps = await _runUpload(upUrl, progress, durationCap: upDuration);
       if (_isCancelled) return progress;
 
       progress = progress.copyWith(
@@ -198,9 +213,12 @@ class SpeedTestEngine {
     }
   }
 
-  Future<double> _runDownload(Uri url, SpeedTestProgress currentProgress) async {
-    const durationCap = Duration(seconds: 10);
-    const warmUp = Duration(milliseconds: 1500);
+  Future<double> _runDownload(
+    Uri url,
+    SpeedTestProgress currentProgress, {
+    required Duration durationCap,
+  }) async {
+    const warmUp = Duration(milliseconds: 1000);
     const sampleInterval = Duration(milliseconds: 200);
 
     var totalBytesTransferred = 0;
@@ -212,7 +230,6 @@ class SpeedTestEngine {
     var lastSampleTime = Duration.zero;
     var lastSampleBytes = 0;
 
-    // Periodic sampling timer
     Timer? sampleTimer;
     sampleTimer = Timer.periodic(sampleInterval, (_) {
       if (_isCancelled || sw.elapsed >= durationCap) {
@@ -244,7 +261,7 @@ class SpeedTestEngine {
       }
     });
 
-    // 4 parallel download streams
+    final concurrency = durationCap.inSeconds <= 5 ? 2 : 4;
     Future<void> downloadWorker() async {
       while (sw.elapsed < durationCap && !_isCancelled) {
         try {
@@ -263,12 +280,8 @@ class SpeedTestEngine {
       }
     }
 
-    await Future.wait([
-      downloadWorker(),
-      downloadWorker(),
-      downloadWorker(),
-      downloadWorker(),
-    ]);
+    final workers = List.generate(concurrency, (_) => downloadWorker());
+    await Future.wait(workers);
 
     sampleTimer.cancel();
     sw.stop();
@@ -282,12 +295,14 @@ class SpeedTestEngine {
     return trimmedMean(samples, trim: 0.1);
   }
 
-  Future<double> _runUpload(Uri url, SpeedTestProgress currentProgress) async {
-    const durationCap = Duration(seconds: 8);
-    const warmUp = Duration(milliseconds: 1500);
+  Future<double> _runUpload(
+    Uri url,
+    SpeedTestProgress currentProgress, {
+    required Duration durationCap,
+  }) async {
+    const warmUp = Duration(milliseconds: 1000);
     const sampleInterval = Duration(milliseconds: 200);
 
-    // Reuse one pre-generated 256 KB chunk
     const chunkSize = 256 * 1024;
     final random = Random(42);
     final chunk = Uint8List(chunkSize);
@@ -335,11 +350,10 @@ class SpeedTestEngine {
       }
     });
 
-    // Cap request body at 2.5 MB (10 chunks of 256 KB) to stay under PHP post_max_size
     const chunksPerRequest = 10;
     const bodySize = chunkSize * chunksPerRequest;
+    final concurrency = durationCap.inSeconds <= 4 ? 2 : 3;
 
-    // 3 parallel upload streams
     Future<void> uploadWorker() async {
       while (sw.elapsed < durationCap && !_isCancelled) {
         try {
@@ -365,11 +379,8 @@ class SpeedTestEngine {
       }
     }
 
-    await Future.wait([
-      uploadWorker(),
-      uploadWorker(),
-      uploadWorker(),
-    ]);
+    final workers = List.generate(concurrency, (_) => uploadWorker());
+    await Future.wait(workers);
 
     sampleTimer.cancel();
     sw.stop();

@@ -1,3 +1,5 @@
+import 'speed_server.dart';
+
 /// Calculates the median of a list of RTT values (in milliseconds).
 double medianMs(List<double> rtts) {
   if (rtts.isEmpty) return 0.0;
@@ -18,6 +20,24 @@ double jitterMs(List<double> rtts) {
     sumDiff += (rtts[i] - rtts[i - 1]).abs();
   }
   return sumDiff / (rtts.length - 1);
+}
+
+/// Classifies network jitter stability.
+SpeedStability stabilityRating(double jitter) {
+  if (jitter <= 0) return SpeedStability.excellent;
+  if (jitter < 15.0) return SpeedStability.excellent;
+  if (jitter <= 50.0) return SpeedStability.good;
+  return SpeedStability.unstable;
+}
+
+/// Returns estimated data usage range string for chosen mode.
+String estimateDataUsage(SpeedTestMode mode, bool isArabic) {
+  switch (mode) {
+    case SpeedTestMode.quick:
+      return isArabic ? '3–8 ميجابايت' : '3–8 MB';
+    case SpeedTestMode.full:
+      return isArabic ? '15–25 ميجابايت' : '15–25 MB';
+  }
 }
 
 /// Calculates speed in Mbps given transferred bytes and duration.

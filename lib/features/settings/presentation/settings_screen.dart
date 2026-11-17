@@ -4,6 +4,7 @@ import '../../../app/theme/colors.dart';
 import '../../../core/prefs/settings_store.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/presentation/home_view_model.dart';
+import '../../speedtest/presentation/server_selector_sheet.dart';
 import '../../usage/data/usage_repository.dart';
 import '../../usage/presentation/usage_view_model.dart';
 
@@ -98,41 +99,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _editServerUrl(SettingsStore settings, AppLocalizations l10n) async {
-    final controller = TextEditingController(text: settings.testBaseUrl);
-
-    final url = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsServer),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'https://...',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            style: FilledButton.styleFrom(backgroundColor: MegaColors.primary),
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-    );
-
-    if (url != null && url.isNotEmpty) {
-      settings.testBaseUrl = url;
-    }
+    await ServerSelectorSheet.show(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final settings = context.watch<SettingsStore>();
     final usageVm = context.watch<UsageViewModel>();
     final usageRepo = context.read<UsageRepository>();
@@ -197,10 +170,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => _chooseLanguage(settings),
           ),
           ListTile(
-            leading: const Icon(Icons.cloud_outlined, color: MegaColors.primary),
-            title: Text(l10n.settingsServer),
+            leading: const Icon(Icons.dns_outlined, color: MegaColors.primary),
+            title: Text(l10n.speedServer),
             subtitle: Text(
-              settings.testBaseUrl,
+              '${settings.selectedServer.flagEmoji} ${settings.selectedServer.localizedName(isArabic)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

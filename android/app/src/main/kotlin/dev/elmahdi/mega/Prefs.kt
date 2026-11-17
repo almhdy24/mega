@@ -25,6 +25,18 @@ object Prefs {
     const val KEY_SKIP_MOBILE_WARNING = "flutter.skip_mobile_warning"
     const val KEY_LAST_FULL_SYNC_MS = "flutter.last_full_sync_ms"
 
+    // Live monitor
+    const val KEY_LIVE_MONITOR_ENABLED = "flutter.live_monitor_enabled"
+    const val KEY_LIVE_MONITOR_INTERVAL_SEC = "flutter.live_monitor_interval_sec"
+    const val KEY_LIVE_MONITOR_UNIT = "flutter.live_monitor_unit"
+    const val KEY_LIVE_MONITOR_ICON_STYLE = "flutter.live_monitor_icon_style"
+    const val KEY_LIVE_MONITOR_MOBILE_ONLY = "flutter.live_monitor_mobile_only"
+    const val KEY_LIVE_MONITOR_HIDE_ON_WIFI = "flutter.live_monitor_hide_on_wifi"
+    const val KEY_LIVE_MONITOR_LOCK_SCREEN = "flutter.live_monitor_lock_screen"
+    const val KEY_LIVE_MONITOR_SCREEN_OFF = "flutter.live_monitor_screen_off"
+    const val KEY_LIVE_MONITOR_START_BOOT = "flutter.live_monitor_start_boot"
+    const val KEY_LIVE_MONITOR_FIELDS = "flutter.live_monitor_fields"
+
     fun get(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 

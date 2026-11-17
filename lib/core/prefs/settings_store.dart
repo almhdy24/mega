@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/speedtest/domain/speed_server.dart';
 import '../time/billing_cycle.dart';
 
 class SettingsStore extends ChangeNotifier {
@@ -22,10 +23,25 @@ class SettingsStore extends ChangeNotifier {
   static const String keyThemeMode = 'theme_mode';
   static const String keyLocale = 'locale';
   static const String keyTestBaseUrl = 'test_base_url';
+  static const String keyTestServerId = 'test_server_id';
+  static const String keyTestCustomUrl = 'test_custom_url';
+  static const String keyTestMode = 'test_mode';
   static const String keyNotifiedCycleStart = 'notified_cycle_start';
   static const String keyNotifiedThresholds = 'notified_thresholds';
   static const String keySkipMobileWarning = 'skip_mobile_warning';
   static const String keyLastFullSyncMs = 'last_full_sync_ms';
+
+  // Live Monitor Keys
+  static const String keyLiveMonitorEnabled = 'live_monitor_enabled';
+  static const String keyLiveMonitorIntervalSec = 'live_monitor_interval_sec';
+  static const String keyLiveMonitorUnit = 'live_monitor_unit';
+  static const String keyLiveMonitorIconStyle = 'live_monitor_icon_style';
+  static const String keyLiveMonitorMobileOnly = 'live_monitor_mobile_only';
+  static const String keyLiveMonitorHideOnWifi = 'live_monitor_hide_on_wifi';
+  static const String keyLiveMonitorLockScreen = 'live_monitor_lock_screen';
+  static const String keyLiveMonitorScreenOff = 'live_monitor_screen_off';
+  static const String keyLiveMonitorStartBoot = 'live_monitor_start_boot';
+  static const String keyLiveMonitorFields = 'live_monitor_fields';
 
   static const String defaultTestBaseUrl = 'https://fra.speedtest.clouvider.net/backend';
 
@@ -148,6 +164,120 @@ class SettingsStore extends ChangeNotifier {
   String get testBaseUrl => _prefs.getString(keyTestBaseUrl) ?? defaultTestBaseUrl;
   set testBaseUrl(String value) {
     _prefs.setString(keyTestBaseUrl, value.trim());
+    notifyListeners();
+  }
+
+  String get testServerId => _prefs.getString(keyTestServerId) ?? 'auto';
+  set testServerId(String value) {
+    _prefs.setString(keyTestServerId, value);
+    notifyListeners();
+  }
+
+  String get testCustomUrl => _prefs.getString(keyTestCustomUrl) ?? '';
+  set testCustomUrl(String value) {
+    _prefs.setString(keyTestCustomUrl, value.trim());
+    notifyListeners();
+  }
+
+  SpeedServer get selectedServer {
+    final server = SpeedServers.findById(testServerId, customUrl: testCustomUrl);
+    if (server.id == 'custom' && testCustomUrl.isNotEmpty) {
+      return server.copyWith(baseUrl: testCustomUrl);
+    }
+    return server;
+  }
+
+  set selectedServer(SpeedServer server) {
+    _prefs.setString(keyTestServerId, server.id);
+    if (server.id == 'custom') {
+      _prefs.setString(keyTestCustomUrl, server.baseUrl);
+    }
+    if (server.baseUrl.isNotEmpty) {
+      _prefs.setString(keyTestBaseUrl, server.baseUrl);
+    }
+    notifyListeners();
+  }
+
+  SpeedTestMode get testMode {
+    final val = _prefs.getString(keyTestMode);
+    if (val == SpeedTestMode.full.name) return SpeedTestMode.full;
+    return SpeedTestMode.quick;
+  }
+
+  set testMode(SpeedTestMode mode) {
+    _prefs.setString(keyTestMode, mode.name);
+    notifyListeners();
+  }
+
+  // Live Monitor Getters / Setters
+  bool get liveMonitorEnabled => _prefs.getBool(keyLiveMonitorEnabled) ?? false;
+  set liveMonitorEnabled(bool value) {
+    _prefs.setBool(keyLiveMonitorEnabled, value);
+    notifyListeners();
+  }
+
+  int get liveMonitorIntervalSec => _prefs.getInt(keyLiveMonitorIntervalSec) ?? 2;
+  set liveMonitorIntervalSec(int value) {
+    _prefs.setInt(keyLiveMonitorIntervalSec, value);
+    notifyListeners();
+  }
+
+  String get liveMonitorUnit => _prefs.getString(keyLiveMonitorUnit) ?? 'bytes'; // 'bytes' or 'bits'
+  set liveMonitorUnit(String value) {
+    _prefs.setString(keyLiveMonitorUnit, value);
+    notifyListeners();
+  }
+
+  String get liveMonitorIconStyle => _prefs.getString(keyLiveMonitorIconStyle) ?? 'dynamic'; // 'dynamic' or 'static'
+  set liveMonitorIconStyle(String value) {
+    _prefs.setString(keyLiveMonitorIconStyle, value);
+    notifyListeners();
+  }
+
+  bool get liveMonitorMobileOnly => _prefs.getBool(keyLiveMonitorMobileOnly) ?? true;
+  set liveMonitorMobileOnly(bool value) {
+    _prefs.setBool(keyLiveMonitorMobileOnly, value);
+    notifyListeners();
+  }
+
+  bool get liveMonitorHideOnWifi => _prefs.getBool(keyLiveMonitorHideOnWifi) ?? false;
+  set liveMonitorHideOnWifi(bool value) {
+    _prefs.setBool(keyLiveMonitorHideOnWifi, value);
+    notifyListeners();
+  }
+
+  String get liveMonitorLockScreen => _prefs.getString(keyLiveMonitorLockScreen) ?? 'public'; // 'public', 'private', 'hidden'
+  set liveMonitorLockScreen(String value) {
+    _prefs.setString(keyLiveMonitorLockScreen, value);
+    notifyListeners();
+  }
+
+  bool get liveMonitorScreenOff => _prefs.getBool(keyLiveMonitorScreenOff) ?? false;
+  set liveMonitorScreenOff(bool value) {
+    _prefs.setBool(keyLiveMonitorScreenOff, value);
+    notifyListeners();
+  }
+
+  bool get liveMonitorStartBoot => _prefs.getBool(keyLiveMonitorStartBoot) ?? true;
+  set liveMonitorStartBoot(bool value) {
+    _prefs.setBool(keyLiveMonitorStartBoot, value);
+    notifyListeners();
+  }
+
+  List<String> get liveMonitorFields {
+    final raw = _prefs.getString(keyLiveMonitorFields);
+    if (raw == null || raw.isEmpty) {
+      return ['speed', 'today', 'remaining', 'days'];
+    }
+    try {
+      return (jsonDecode(raw) as List).cast<String>();
+    } catch (_) {
+      return ['speed', 'today', 'remaining', 'days'];
+    }
+  }
+
+  set liveMonitorFields(List<String> fields) {
+    _prefs.setString(keyLiveMonitorFields, jsonEncode(fields));
     notifyListeners();
   }
 

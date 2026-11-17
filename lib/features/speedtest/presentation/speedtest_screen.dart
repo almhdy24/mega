@@ -5,6 +5,9 @@ import '../../../app/theme/colors.dart';
 import '../../../core/format/speed.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/speed_test_engine.dart';
+import '../domain/speed_math.dart';
+import '../domain/speed_server.dart';
+import 'server_selector_sheet.dart';
 import 'speed_history_chart.dart';
 import 'speedtest_view_model.dart';
 
@@ -28,6 +31,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     BuildContext context,
     SpeedTestViewModel vm,
     AppLocalizations l10n,
+    bool isArabic,
   ) async {
     final netType = await vm.detectNetworkType();
     if (netType != 'mobile' || vm.settings.skipMobileWarning) {
@@ -36,6 +40,8 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     }
 
     if (!context.mounted) return;
+
+    final estimatedSize = estimateDataUsage(vm.selectedMode, isArabic);
 
     var dontAskAgain = false;
     final confirmed = await showDialog<bool>(
@@ -52,55 +58,55 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
             ],
           ),
           content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.speedMobileWarningBody('15-25 MB'),
-                style: const TextStyle(fontSize: 14, height: 1.4),
-              ),
-              const SizedBox(height: 12),
-              InkWell(
-                onTap: () {
-                  setDialogState(() {
-                    dontAskAgain = !dontAskAgain;
-                  });
-                },
-                child: Row(
-                  children: [
-                    Checkbox(
-                      value: dontAskAgain,
-                      onChanged: (v) {
-                        setDialogState(() {
-                          dontAskAgain = v ?? false;
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                    const Expanded(
-                      child: Text(
-                        'عدم السؤال مرة أخرى / Don\'t ask again',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(l10n.commonCancel),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.speedMobileWarningBody(estimatedSize),
+              style: const TextStyle(fontSize: 14, height: 1.4),
             ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: FilledButton.styleFrom(backgroundColor: MegaColors.primary),
-              child: Text(l10n.speedProceed),
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () {
+                setDialogState(() {
+                  dontAskAgain = !dontAskAgain;
+                });
+              },
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: dontAskAgain,
+                    onChanged: (v) {
+                      setDialogState(() {
+                        dontAskAgain = v ?? false;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      isArabic ? 'عدم السؤال مرة أخرى على بيانات الهاتف' : 'Don\'t ask again on mobile data',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: MegaColors.primary),
+            child: Text(l10n.speedProceed),
+          ),
+        ],
       ),
+    ),
     );
 
     if (confirmed == true) {
@@ -121,15 +127,26 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.navSpeedTest),
+        actions: [
+          IconButton(
+            tooltip: l10n.speedServer,
+            icon: const Icon(Icons.dns_outlined),
+            onPressed: () => ServerSelectorSheet.show(context),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsetsDirectional.all(16),
         children: [
+          // Top Controls: Server Chip & Mode Toggle
+          _buildControlsRow(context, vm, isArabic, l10n),
+          const SizedBox(height: 12),
+
           // Live Gauge / Hero Area
           _buildHeroGauge(context, l10n, isArabic, vm, progress),
           const SizedBox(height: 16),
 
-          // 4 Metric Tiles: Ping, Jitter, Down, Up
+          // 4 Metric Tiles: Ping, Jitter (with stability), Down, Up
           _buildMetricTiles(context, l10n, isArabic, progress),
           const SizedBox(height: 20),
 
@@ -137,6 +154,83 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
           _buildHistorySection(context, l10n, isArabic, vm),
         ],
       ),
+    );
+  }
+
+  Widget _buildControlsRow(
+    BuildContext context,
+    SpeedTestViewModel vm,
+    bool isArabic,
+    AppLocalizations l10n,
+  ) {
+    final selectedServer = vm.selectedServer;
+    final isRunning = vm.isRunning;
+
+    return Row(
+      children: [
+        // Server Selector Chip
+        Expanded(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: isRunning ? null : () => ServerSelectorSheet.show(context),
+            child: Container(
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Text(selectedServer.flagEmoji, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      selectedServer.localizedName(isArabic),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, size: 20),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // Mode Segmented Buttons: Quick (~4 MB) vs Full (~20 MB)
+        SegmentedButton<SpeedTestMode>(
+          segments: [
+            ButtonSegment(
+              value: SpeedTestMode.quick,
+              label: Text(
+                isArabic ? 'سريع' : 'Quick',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ButtonSegment(
+              value: SpeedTestMode.full,
+              label: Text(
+                isArabic ? 'كامل' : 'Full',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+          selected: {vm.selectedMode},
+          onSelectionChanged: isRunning
+              ? null
+              : (set) {
+                  if (set.isNotEmpty) vm.setTestMode(set.first);
+                },
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ],
     );
   }
 
@@ -151,17 +245,32 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(vertical: 28, horizontal: 20),
+        padding: const EdgeInsetsDirectional.symmetric(vertical: 24, horizontal: 20),
         child: Column(
           children: [
             // Current phase indicator
-            Text(
-              _phaseLabel(progress.phase, l10n),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isRunning ? MegaColors.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _phaseLabel(progress.phase, l10n),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isRunning ? MegaColors.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                if (progress.server != null && progress.phase == SpeedTestPhase.completed) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    '· ${progress.server!.flagEmoji} ${progress.server!.localizedName(isArabic)}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 12),
 
@@ -195,7 +304,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Progress bar
             if (isRunning) ...[
@@ -208,7 +317,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                   minHeight: 6,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
             ],
 
             // Action Button
@@ -220,7 +329,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
               )
             else
               FilledButton.icon(
-                onPressed: () => _confirmAndStart(context, vm, l10n),
+                onPressed: () => _confirmAndStart(context, vm, l10n, isArabic),
                 style: FilledButton.styleFrom(
                   backgroundColor: MegaColors.primary,
                   padding: const EdgeInsetsDirectional.symmetric(horizontal: 36, vertical: 14),
@@ -253,6 +362,25 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     bool isArabic,
     SpeedTestProgress progress,
   ) {
+    String? stabilityLabel;
+    Color? stabilityColor;
+    if (progress.jitterMs > 0) {
+      switch (progress.stability) {
+        case SpeedStability.excellent:
+          stabilityLabel = l10n.speedStabilityExcellent;
+          stabilityColor = MegaColors.success;
+          break;
+        case SpeedStability.good:
+          stabilityLabel = l10n.speedStabilityGood;
+          stabilityColor = MegaColors.warning;
+          break;
+        case SpeedStability.unstable:
+          stabilityLabel = l10n.speedStabilityUnstable;
+          stabilityColor = MegaColors.danger;
+          break;
+      }
+    }
+
     return Row(
       children: [
         Expanded(
@@ -270,6 +398,8 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
             title: l10n.speedJitter,
             value: progress.jitterMs > 0 ? SpeedFormatter.formatMs(progress.jitterMs, isArabic: isArabic) : '--',
             icon: Icons.waves,
+            badge: stabilityLabel,
+            badgeColor: stabilityColor,
           ),
         ),
         const SizedBox(width: 8),
@@ -301,10 +431,12 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     required String value,
     required IconData icon,
     Color? highlightColor,
+    String? badge,
+    Color? badgeColor,
   }) {
     return Card(
       child: Padding(
-        padding: const EdgeInsetsDirectional.all(12),
+        padding: const EdgeInsetsDirectional.all(10),
         child: Column(
           children: [
             Icon(icon, size: 18, color: highlightColor ?? Theme.of(context).colorScheme.primary),
@@ -324,6 +456,24 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               ),
             ),
+            if (badge != null) ...[
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsetsDirectional.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: badgeColor?.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: badgeColor,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -388,11 +538,13 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     subtitle: Text(
-                      '$dateStr · ${SpeedFormatter.formatMs(record.pingMs, isArabic: isArabic)}',
+                      '$dateStr · ${SpeedFormatter.formatMs(record.pingMs, isArabic: isArabic)} · ${record.server}',
                       style: TextStyle(
                         fontSize: 11,
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   );
                 },

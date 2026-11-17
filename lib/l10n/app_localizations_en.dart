@@ -278,4 +278,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStartUsing => 'Start Using MEGA';
+
+  @override
+  String get speedServer => 'Test Server';
+
+  @override
+  String get speedModeQuick => 'Quick (~4 MB)';
+
+  @override
+  String get speedModeFull => 'Full (~20 MB)';
+
+  @override
+  String get speedStabilityExcellent => 'Excellent';
+
+  @override
+  String get speedStabilityGood => 'Good';
+
+  @override
+  String get speedStabilityUnstable => 'Unstable';
+
+  @override
+  String get liveNotificationTitle => 'Live Speed & Notification';
+
+  @override
+  String get liveNotificationDesc =>
+      'Show live speed in status bar and ongoing notification';
+
+  @override
+  String get liveNotificationSettings => 'Live Notification Settings';
+
+  @override
+  String get liveNotificationBatteryHelp => 'If Live Notification Disappears';
 }

@@ -282,4 +282,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingStartUsing => 'ابدأ استخدام ميقا';
+
+  @override
+  String get speedServer => 'خادم الفحص';
+
+  @override
+  String get speedModeQuick => 'سريع (~4 ميجابايت)';
+
+  @override
+  String get speedModeFull => 'كامل (~20 ميجابايت)';
+
+  @override
+  String get speedStabilityExcellent => 'ممتاز';
+
+  @override
+  String get speedStabilityGood => 'مستقر';
+
+  @override
+  String get speedStabilityUnstable => 'متذبذب';
+
+  @override
+  String get liveNotificationTitle => 'الإشعار الحي وعداد السرعة';
+
+  @override
+  String get liveNotificationDesc =>
+      'عرض السرعة الحية في شريط الحالة وإشعار مستمر';
+
+  @override
+  String get liveNotificationSettings => 'إعدادات الإشعار الحي';
+
+  @override
+  String get liveNotificationBatteryHelp => 'إذا اختفى الإشعار الحي';
 }
