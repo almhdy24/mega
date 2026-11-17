@@ -17,6 +17,7 @@ android {
     namespace = "dev.elmahdi.mega"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    testBuildType = "release"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
