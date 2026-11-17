@@ -86,10 +86,9 @@ jobs:
           fi
 
           echo "Signature verified: CN=Elmahdi ABDALLH"
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          echo "$CERT_OUTPUT" | grep "Signer #1 certificate DN" >> $GITHUB_STEP_SUMMARY
-          echo "$CERT_OUTPUT" | grep "Signer #1 certificate SHA-256 digest" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          echo "$CERT_OUTPUT" | grep "Signer #1" >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Cleanup signing credentials
         if: always()
