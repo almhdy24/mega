@@ -39,6 +39,17 @@ class UsageWorker(
         val cycleStartMs = cycleStart.timeInMillis
         val nowMs = now.timeInMillis
 
+        // 4. Query current mobile usage from cycle start to now
+        val usageMap = UsageQuery.range(ctx, cycleStartMs, nowMs)
+        val mobileSupported = (usageMap["mobileSupported"] as? Boolean) ?: true
+        if (!mobileSupported) {
+            return Result.success()
+        }
+
+        val mobileRx = (usageMap["mobileRx"] as? Number)?.toLong() ?: 0L
+        val mobileTx = (usageMap["mobileTx"] as? Number)?.toLong() ?: 0L
+        val mobileUsedBytes = mobileRx + mobileTx
+
         // Check if cycle rolled over
         val savedCycleStart = prefs.getLong("flutter.notified_cycle_start", 0L)
         val notifiedSet = mutableSetOf<Int>()
@@ -74,12 +85,6 @@ class UsageWorker(
             }
         }
         thresholds.sort()
-
-        // 4. Query current mobile usage from cycle start to now
-        val usageMap = UsageQuery.range(ctx, cycleStartMs, nowMs)
-        val mobileRx = usageMap["mobileRx"] ?: 0L
-        val mobileTx = usageMap["mobileTx"] ?: 0L
-        val mobileUsedBytes = mobileRx + mobileTx
 
         // 5. Evaluate newly crossed thresholds
         val pct = (mobileUsedBytes.toDouble() * 100.0) / bundleBytes.toDouble()

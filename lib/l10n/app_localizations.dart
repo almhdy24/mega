@@ -290,6 +290,12 @@ abstract class AppLocalizations {
   /// **'Mobile'**
   String get usageMobile;
 
+  /// No description provided for @usageMobileUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile data stats unsupported on Android < 10'**
+  String get usageMobileUnsupported;
+
   /// No description provided for @usageWifi.
   ///
   /// In en, this message translates to:

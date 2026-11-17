@@ -21,6 +21,9 @@ class UsageViewModel extends ChangeNotifier {
   bool _hasAccess = false;
   bool get hasAccess => _hasAccess;
 
+  bool _isMobileSupported = true;
+  bool get isMobileSupported => _isMobileSupported;
+
   UsageTotals _today = const UsageTotals.zero();
   UsageTotals get todayTotals => _today;
 
@@ -45,6 +48,14 @@ class UsageViewModel extends ChangeNotifier {
       _hasAccess = await repository.usageSource.hasAccess();
 
       if (_hasAccess) {
+        // Check if mobile stats are supported on this Android OS version
+        final now = DateTime.now();
+        final check = await repository.usageSource.queryRange(
+          DayRange.startOfDay(now),
+          DayRange.endOfDay(now),
+        );
+        _isMobileSupported = check.mobileSupported;
+
         // Sync system usage into SQLite
         await repository.syncSnapshots(days: 35);
       }
@@ -54,16 +65,19 @@ class UsageViewModel extends ChangeNotifier {
       // Today
       final todayStart = DayRange.startOfDay(now);
       final todayEnd = DayRange.endOfDay(now);
-      _today = await repository.getTotalsForRange(todayStart, todayEnd);
+      final todayData = await repository.getTotalsForRange(todayStart, todayEnd);
+      _today = todayData.copyWith(mobileSupported: _isMobileSupported);
 
       // This Cycle
       final cycle = billingCycle(now, settings.cycleStartDay);
-      _cycle = await repository.getTotalsForRange(cycle.start, cycle.end);
+      final cycleData = await repository.getTotalsForRange(cycle.start, cycle.end);
+      _cycle = cycleData.copyWith(mobileSupported: _isMobileSupported);
 
       // This Month (1st of month to 1st of next month)
       final monthStart = DateTime(now.year, now.month, 1);
       final monthEnd = DateTime(now.year, now.month + 1, 1);
-      _month = await repository.getTotalsForRange(monthStart, monthEnd);
+      final monthData = await repository.getTotalsForRange(monthStart, monthEnd);
+      _month = monthData.copyWith(mobileSupported: _isMobileSupported);
 
       // 30 days chart
       _chartData = await repository.getLast30Days(referenceNow: now);

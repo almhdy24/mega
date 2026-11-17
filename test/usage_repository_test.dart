@@ -154,5 +154,29 @@ void main() {
       expect(totals.mobileTotal, 700);
       expect(totals.wifiTotal, 3000);
     });
+    test('handles mobileSupported = false on unsupported Android versions', () async {
+      const unsupported = UsageTotals(
+        mobileRx: 0,
+        mobileTx: 0,
+        wifiRx: 500,
+        wifiTx: 300,
+        mobileSupported: false,
+      );
+
+      expect(unsupported.mobileSupported, isFalse);
+      expect(unsupported.mobileTotal, 0);
+      expect(unsupported.wifiTotal, 800);
+      expect(unsupported.grandTotal, 800);
+
+      final combined = unsupported + const UsageTotals(
+        mobileRx: 10,
+        mobileTx: 10,
+        wifiRx: 10,
+        wifiTx: 10,
+        mobileSupported: true,
+      );
+      // Combined should preserve unsupported state
+      expect(combined.mobileSupported, isFalse);
+    });
   });
 }

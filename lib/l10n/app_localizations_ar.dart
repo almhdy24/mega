@@ -123,6 +123,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get usageMobile => 'بيانات الهاتف';
 
   @override
+  String get usageMobileUnsupported =>
+      'استهلاك الهاتف غير مدعوم في إصدار أندرويد هذا (يتطلب أندرويد 10 فأعلى)';
+
+  @override
   String get usageWifi => 'واي فاي';
 
   @override

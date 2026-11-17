@@ -108,27 +108,47 @@ object UsageQuery {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    fun range(ctx: Context, startMs: Long, endMs: Long): Map<String, Long> {
+    fun range(ctx: Context, startMs: Long, endMs: Long): Map<String, Any> {
         val nsm = ctx.getSystemService(Context.NETWORK_STATS_SERVICE) as? NetworkStatsManager
-            ?: return mapOf("mobileRx" to 0L, "mobileTx" to 0L, "wifiRx" to 0L, "wifiTx" to 0L)
+            ?: return mapOf(
+                "mobileRx" to 0L,
+                "mobileTx" to 0L,
+                "wifiRx" to 0L,
+                "wifiTx" to 0L,
+                "mobileSupported" to false
+            )
 
-        fun q(type: Int): Pair<Long, Long> {
-            return try {
-                val b = nsm.querySummaryForDevice(type, null, startMs, endMs)
-                (b.rxBytes) to (b.txBytes)
+        var mobileSupported = Build.VERSION.SDK_INT >= 29
+        var mRx = 0L
+        var mTx = 0L
+
+        if (Build.VERSION.SDK_INT >= 29) {
+            try {
+                val b = nsm.querySummaryForDevice(ConnectivityManager.TYPE_MOBILE, null, startMs, endMs)
+                mRx = b.rxBytes
+                mTx = b.txBytes
             } catch (_: Throwable) {
-                0L to 0L
+                mobileSupported = false
             }
+        } else {
+            // Android 8.0-9.0 (API 26-28) requires READ_PHONE_STATE/subscriberId for mobile stats
+            mobileSupported = false
         }
 
-        val (mRx, mTx) = q(ConnectivityManager.TYPE_MOBILE)
-        val (wRx, wTx) = q(ConnectivityManager.TYPE_WIFI)
+        var wRx = 0L
+        var wTx = 0L
+        try {
+            val b = nsm.querySummaryForDevice(ConnectivityManager.TYPE_WIFI, null, startMs, endMs)
+            wRx = b.rxBytes
+            wTx = b.txBytes
+        } catch (_: Throwable) {}
 
         return mapOf(
             "mobileRx" to mRx,
             "mobileTx" to mTx,
             "wifiRx" to wRx,
-            "wifiTx" to wTx
+            "wifiTx" to wTx,
+            "mobileSupported" to mobileSupported
         )
     }
 }

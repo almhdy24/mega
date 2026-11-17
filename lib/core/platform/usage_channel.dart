@@ -5,15 +5,17 @@ class UsageTotals {
   final int mobileTx;
   final int wifiRx;
   final int wifiTx;
+  final bool mobileSupported;
 
   const UsageTotals({
     required this.mobileRx,
     required this.mobileTx,
     required this.wifiRx,
     required this.wifiTx,
+    this.mobileSupported = true,
   });
 
-  const UsageTotals.zero()
+  const UsageTotals.zero({this.mobileSupported = true})
       : mobileRx = 0,
         mobileTx = 0,
         wifiRx = 0,
@@ -28,12 +30,14 @@ class UsageTotals {
     int? mobileTx,
     int? wifiRx,
     int? wifiTx,
+    bool? mobileSupported,
   }) {
     return UsageTotals(
       mobileRx: mobileRx ?? this.mobileRx,
       mobileTx: mobileTx ?? this.mobileTx,
       wifiRx: wifiRx ?? this.wifiRx,
       wifiTx: wifiTx ?? this.wifiTx,
+      mobileSupported: mobileSupported ?? this.mobileSupported,
     );
   }
 
@@ -43,6 +47,7 @@ class UsageTotals {
       mobileTx: mobileTx + other.mobileTx,
       wifiRx: wifiRx + other.wifiRx,
       wifiTx: wifiTx + other.wifiTx,
+      mobileSupported: mobileSupported && other.mobileSupported,
     );
   }
 }
@@ -90,6 +95,7 @@ class PlatformUsageSource implements UsageSource {
         mobileTx: (res['mobileTx'] as num?)?.toInt() ?? 0,
         wifiRx: (res['wifiRx'] as num?)?.toInt() ?? 0,
         wifiTx: (res['wifiTx'] as num?)?.toInt() ?? 0,
+        mobileSupported: (res['mobileSupported'] as bool?) ?? true,
       );
     } catch (_) {
       return const UsageTotals.zero();

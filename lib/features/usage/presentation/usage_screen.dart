@@ -62,10 +62,41 @@ class _UsageScreenState extends State<UsageScreen> with WidgetsBindingObserver {
             if (!vm.hasAccess) ...[
               _buildPermissionBanner(context, l10n, vm),
               const SizedBox(height: 16),
+            ] else if (!vm.isMobileSupported) ...[
+              _buildUnsupportedBanner(context, l10n),
+              const SizedBox(height: 16),
             ],
             _buildPeriodSelector(context, l10n, isArabic, vm),
             const SizedBox(height: 20),
             _buildChartSection(context, l10n, isArabic, vm),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnsupportedBanner(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return Card(
+      color: MegaColors.warning.withValues(alpha: 0.12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: MegaColors.warning.withValues(alpha: 0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(14),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: MegaColors.warning, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.usageMobileUnsupported,
+                style: const TextStyle(fontSize: 12, height: 1.3),
+              ),
+            ),
           ],
         ),
       ),
@@ -228,8 +259,14 @@ class _UsageScreenState extends State<UsageScreen> with WidgetsBindingObserver {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              ByteFormatter.format(totals.mobileTotal, isArabic: isArabic),
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              totals.mobileSupported
+                                  ? ByteFormatter.format(totals.mobileTotal, isArabic: isArabic)
+                                  : (isArabic ? 'غير مدعوم' : 'Unsupported'),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: totals.mobileSupported ? 14 : 12,
+                                color: totals.mobileSupported ? null : MegaColors.warning,
+                              ),
                             ),
                           ],
                         ),

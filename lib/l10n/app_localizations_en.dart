@@ -119,6 +119,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usageMobile => 'Mobile';
 
   @override
+  String get usageMobileUnsupported =>
+      'Mobile data stats unsupported on Android < 10';
+
+  @override
   String get usageWifi => 'Wi-Fi';
 
   @override

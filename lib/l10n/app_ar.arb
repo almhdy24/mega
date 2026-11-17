@@ -47,6 +47,7 @@
   "usageCycle": "الدورة الحالية",
   "usageMonth": "هذا الشهر",
   "usageMobile": "بيانات الهاتف",
+  "usageMobileUnsupported": "استهلاك الهاتف غير مدعوم في إصدار أندرويد هذا (يتطلب أندرويد 10 فأعلى)",
   "usageWifi": "واي فاي",
   "usageTotal": "الإجمالي",
   "usageHistory30Days": "استهلاك آخر 30 يوماً",

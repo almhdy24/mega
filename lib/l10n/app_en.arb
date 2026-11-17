@@ -47,6 +47,7 @@
   "usageCycle": "This Cycle",
   "usageMonth": "This Month",
   "usageMobile": "Mobile",
+  "usageMobileUnsupported": "Mobile data stats unsupported on Android < 10",
   "usageWifi": "Wi-Fi",
   "usageTotal": "Total",
   "usageHistory30Days": "Last 30 Days Usage",
