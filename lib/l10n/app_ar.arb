@@ -1,0 +1,86 @@
+{
+  "@@locale": "ar",
+  "appName": "ميقا",
+  "appTagline": "ميقابايتك محسوبة",
+  "navHome": "الرئيسية",
+  "navSpeedTest": "اختبار السرعة",
+  "navUsage": "الاستهلاك",
+  "navSettings": "الإعدادات",
+  "homeRemaining": "المتبقي من الباقة",
+  "homeOfBundle": "من أصل {total}",
+  "@homeOfBundle": {
+    "placeholders": {
+      "total": { "type": "String" }
+    }
+  },
+  "homeDaysLeft": "{count, plural, =0{اليوم الأخير} =1{متبقي يوم واحد} =2{متبقي يومان} few{متبقي {count} أيام} many{متبقي {count} يوماً} other{متبقي {count} يوم}}",
+  "@homeDaysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeDailyAverage": "المعدل اليومي الحالي",
+  "homeDailyTarget": "المعدل المتاح للاستمرار",
+  "homeNoBundle": "لم يتم ضبط باقة",
+  "homeSetBundle": "اضبط حجم باقتك وتاريخ تجديدها في الإعدادات لمتابعة المتبقي",
+  "homeLastSpeed": "آخر اختبار سرعة",
+  "homeSpeedUnavailable": "لا يوجد اختبار سرعة سابق",
+  "speedStart": "بدء الاختبار",
+  "speedTesting": "جاري الاختبار...",
+  "speedCancel": "إلغاء",
+  "speedPing": "الاستجابة",
+  "speedJitter": "التذبذب",
+  "speedDownload": "التحميل",
+  "speedUpload": "الرفع",
+  "speedHistory": "سجل الاختبارات",
+  "speedNoHistory": "لا توجد اختبارات سابقة",
+  "speedMobileWarningTitle": "تنبيه استهلاك البيانات",
+  "speedMobileWarningBody": "الاختبار يستهلك بيانات إنترنت تقريبية (~{size}). هل تريد المتابعة؟",
+  "@speedMobileWarningBody": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "speedProceed": "متابعة",
+  "speedFailed": "تعذر إجراء الاختبار. تحقق من الاتصال والخادم.",
+  "usageToday": "اليوم",
+  "usageCycle": "الدورة الحالية",
+  "usageMonth": "هذا الشهر",
+  "usageMobile": "بيانات الهاتف",
+  "usageWifi": "واي فاي",
+  "usageTotal": "الإجمالي",
+  "usageHistory30Days": "استهلاك آخر 30 يوماً",
+  "usageAccessRequired": "إذن الوصول للاستهلاك مطلوب",
+  "usagePermissionRationale": "نحتاج إذن الوصول لإحصائيات الاستخدام لقراءة استهلاك الإنترنت. لا يتم إرسال أي بيانات خارج جهازك.",
+  "usageOpenSettings": "فتح الإعدادات",
+  "usagePermissionGranted": "تم منح الإذن",
+  "usagePermissionMissing": "مطلوب تفعيل الإذن",
+  "settingsBundleSize": "حجم الباقة (ميجابايت)",
+  "settingsCycleStart": "يوم بداية الدورة",
+  "settingsCycleDay": "يوم {day} من الشهر",
+  "@settingsCycleDay": {
+    "placeholders": {
+      "day": { "type": "int" }
+    }
+  },
+  "settingsAlerts": "تنبيهات الاستهلاك",
+  "settingsAlertsDescription": "إشعار عند الوصول لـ 50% و80% و100% من الباقة",
+  "settingsTheme": "المظهر",
+  "settingsThemeSystem": "تلقائي حسب النظام",
+  "settingsThemeLight": "فاتح",
+  "settingsThemeDark": "داكن",
+  "settingsLanguage": "اللغة",
+  "settingsServer": "خادم الاختبار",
+  "settingsUsagePermission": "إذن إحصائيات الاستخدام",
+  "settingsAbout": "عن تطبيق ميقا",
+  "settingsAboutDesc": "تطبيق مجاني مفتوح المصدر خفيف جداً لمراقبة الإنترنت والبيانات صُمم بعناية للسودان 🇸🇩",
+  "settingsLicense": "ترخيص MIT · المهدي ديف",
+  "commonMb": "ميجابايت",
+  "commonGb": "جيجابايت",
+  "commonKb": "كيلوبايت",
+  "commonB": "بايت",
+  "commonMbps": "ميجابت/ث",
+  "commonMs": "ملي ثانية",
+  "commonSave": "حفظ",
+  "commonCancel": "إلغاء"
+}

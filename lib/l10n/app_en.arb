@@ -1,0 +1,86 @@
+{
+  "@@locale": "en",
+  "appName": "MEGA",
+  "appTagline": "Every byte counts",
+  "navHome": "Home",
+  "navSpeedTest": "Speed Test",
+  "navUsage": "Usage",
+  "navSettings": "Settings",
+  "homeRemaining": "Remaining Data",
+  "homeOfBundle": "of {total}",
+  "@homeOfBundle": {
+    "placeholders": {
+      "total": { "type": "String" }
+    }
+  },
+  "homeDaysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
+  "@homeDaysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeDailyAverage": "Daily average",
+  "homeDailyTarget": "Target daily pace",
+  "homeNoBundle": "No bundle configured",
+  "homeSetBundle": "Set up your bundle in Settings to track remaining data",
+  "homeLastSpeed": "Last speed test",
+  "homeSpeedUnavailable": "No speed tests recorded yet",
+  "speedStart": "Start Test",
+  "speedTesting": "Testing...",
+  "speedCancel": "Cancel",
+  "speedPing": "Ping",
+  "speedJitter": "Jitter",
+  "speedDownload": "Download",
+  "speedUpload": "Upload",
+  "speedHistory": "Test History",
+  "speedNoHistory": "No tests recorded yet",
+  "speedMobileWarningTitle": "Data Consumption Warning",
+  "speedMobileWarningBody": "Running a speed test consumes mobile data (~{size}). Do you want to proceed?",
+  "@speedMobileWarningBody": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "speedProceed": "Proceed",
+  "speedFailed": "Test failed. Please check connection and server.",
+  "usageToday": "Today",
+  "usageCycle": "This Cycle",
+  "usageMonth": "This Month",
+  "usageMobile": "Mobile",
+  "usageWifi": "Wi-Fi",
+  "usageTotal": "Total",
+  "usageHistory30Days": "Last 30 Days Usage",
+  "usageAccessRequired": "Usage Access Required",
+  "usagePermissionRationale": "MEGA needs Usage Access permission to read data consumption directly from your device. No data is ever transmitted off your phone.",
+  "usageOpenSettings": "Open Settings",
+  "usagePermissionGranted": "Access granted",
+  "usagePermissionMissing": "Access needed",
+  "settingsBundleSize": "Bundle Size (MB)",
+  "settingsCycleStart": "Cycle Start Day",
+  "settingsCycleDay": "Day {day} of month",
+  "@settingsCycleDay": {
+    "placeholders": {
+      "day": { "type": "int" }
+    }
+  },
+  "settingsAlerts": "Data Alerts",
+  "settingsAlertsDescription": "Notify at 50%, 80%, and 100% of bundle",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System Default",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguage": "Language",
+  "settingsServer": "Test Server URL",
+  "settingsUsagePermission": "Usage Stats Permission",
+  "settingsAbout": "About MEGA",
+  "settingsAboutDesc": "Free, open-source, ultra-light internet monitor made with care for Sudan 🇸🇩",
+  "settingsLicense": "MIT License · Elmahdi Dev",
+  "commonMb": "MB",
+  "commonGb": "GB",
+  "commonKb": "KB",
+  "commonB": "B",
+  "commonMbps": "Mbps",
+  "commonMs": "ms",
+  "commonSave": "Save",
+  "commonCancel": "Cancel"
+}
