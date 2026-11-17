@@ -4,6 +4,7 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -46,11 +47,18 @@ jobs:
               "${{ secrets.KEYSTORE_PASSWORD }}" "${{ secrets.KEY_ALIAS }}" "${{ secrets.KEY_PASSWORD }}" \
               > android/key.properties
           fi
-      - run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols --android-skip-build-dependency-validation
-      - name: APK size report
+      - name: Build debug APKs
+        run: flutter build apk --debug --split-per-abi --android-skip-build-dependency-validation
+      - name: Build release APKs
+        run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols --android-skip-build-dependency-validation
+      - name: APK size report & breakdown
         run: |
           echo "### APK sizes" >> $GITHUB_STEP_SUMMARY
           ls -l build/app/outputs/flutter-apk/*.apk | awk '{printf "- %s: %.2f MB\n", $9, $5/1048576}' >> $GITHUB_STEP_SUMMARY
+          echo "### Top ARM64 APK Internal Contributors" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          unzip -l build/app/outputs/flutter-apk/app-arm64-v8a-release.apk | sort -nr -k1 | head -n 30 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         with:
           name: mega-apks
@@ -59,4 +67,70 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/*.apk
+          files: build/app/outputs/flutter-apk/*-release.apk
+
+  smoke:
+    needs: build
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/download-artifact@v4
+        with:
+          name: mega-apks
+          path: apks
+      - name: Run smoke tests in emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          disable-animations: true
+          script: |
+            set -e
+            echo "=== Smoke Testing Debug APK ==="
+            if [ -f "apks/app-x86_64-debug.apk" ]; then
+              adb install -r apks/app-x86_64-debug.apk
+              adb logcat -c
+              adb shell monkey -p dev.elmahdi.mega -c android.intent.category.LAUNCHER 1
+              sleep 20
+              adb logcat -d > logcat-debug.txt
+              DEBUG_PID=$(adb shell pidof dev.elmahdi.mega | tr -d '\r\n' || true)
+              echo "Debug PID: $DEBUG_PID"
+              adb uninstall dev.elmahdi.mega || true
+            fi
+
+            echo "=== Smoke Testing Release APK ==="
+            adb install -r apks/app-x86_64-release.apk
+            adb logcat -c
+            adb shell monkey -p dev.elmahdi.mega -c android.intent.category.LAUNCHER 1
+            sleep 20
+            adb logcat -d > logcat.txt
+
+            PID=$(adb shell pidof dev.elmahdi.mega | tr -d '\r\n' || true)
+            echo "Release PID: $PID"
+
+            if [ -z "$PID" ]; then
+              echo "Error: Process dev.elmahdi.mega is not running after 20s!"
+              exit 1
+            fi
+
+            if grep -E "FATAL EXCEPTION.*dev\.elmahdi\.mega|AndroidRuntime.*FATAL.*dev\.elmahdi\.mega" logcat.txt; then
+              echo "Fatal exception detected in logcat for dev.elmahdi.mega!"
+              exit 1
+            fi
+            echo "Smoke test passed successfully! Process running with PID $PID."
+      - name: Upload logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-logcat
+          path: logcat*.txt
