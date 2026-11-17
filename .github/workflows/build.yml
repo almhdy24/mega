@@ -46,7 +46,7 @@ jobs:
               "${{ secrets.KEYSTORE_PASSWORD }}" "${{ secrets.KEY_ALIAS }}" "${{ secrets.KEY_PASSWORD }}" \
               > android/key.properties
           fi
-      - run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols
+      - run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols --android-skip-build-dependency-validation
       - name: APK size report
         run: |
           echo "### APK sizes" >> $GITHUB_STEP_SUMMARY
