@@ -1,0 +1,111 @@
+name: release-arm64
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Prepare signing
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PW: ${{ secrets.KEYSTORE_PASSWORD }}
+          K_ALIAS: ${{ secrets.KEY_ALIAS }}
+          K_PW: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ] || [ -z "$KS_PW" ] || [ -z "$K_ALIAS" ] || [ -z "$K_PW" ]; then
+            echo "ERROR: Missing required signing secret(s)!"
+            exit 1
+          fi
+          echo "$KS_B64" | base64 -d > android/app/release.jks
+          printf "storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n" \
+            "$KS_PW" "$K_ALIAS" "$K_PW" > android/key.properties
+
+      - name: Build arm64 release APK
+        run: flutter build apk --release --split-per-abi --target-platform android-arm64 --obfuscate --split-debug-info=build/symbols --android-skip-build-dependency-validation
+
+      - name: Verify APK and Signature
+        run: |
+          APK="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          if [ ! -f "$APK" ]; then
+            echo "ERROR: Expected APK not found at $APK"
+            exit 1
+          fi
+
+          echo "### ARM64 Release APK Size" >> $GITHUB_STEP_SUMMARY
+          ls -lh "$APK" | awk '{printf "- **File:** %s\n- **Size:** %s (%.2f MB)\n", $9, $5, $5/1048576}' >> $GITHUB_STEP_SUMMARY
+
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
+          if [ -z "$APKSIGNER" ]; then
+            echo "ERROR: apksigner not found in $ANDROID_HOME/build-tools"
+            exit 1
+          fi
+
+          echo "Using apksigner: $APKSIGNER"
+          CERT_OUTPUT=$("$APKSIGNER" verify --print-certs "$APK")
+
+          if echo "$CERT_OUTPUT" | grep -q "CN=Android Debug"; then
+            echo "ERROR: APK is signed with debug key!"
+            exit 1
+          fi
+
+          if ! echo "$CERT_OUTPUT" | grep -q "CN=Elmahdi ABDALLH"; then
+            echo "ERROR: Expected signing subject CN=Elmahdi ABDALLH not found!"
+            echo "$CERT_OUTPUT"
+            exit 1
+          fi
+
+          echo "Signature verified: CN=Elmahdi ABDALLH"
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          echo "$CERT_OUTPUT" | grep "Signer #1 certificate DN" >> $GITHUB_STEP_SUMMARY
+          echo "$CERT_OUTPUT" | grep "Signer #1 certificate SHA-256 digest" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup signing credentials
+        if: always()
+        run: |
+          rm -f android/app/release.jks android/key.properties
+
+      - name: Upload arm64 release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-arm64-v8a-release
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          retention-days: 30
+
+      - name: Publish to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          generate_release_notes: true
