@@ -16,6 +16,12 @@ class MockUsageSource implements UsageSource {
   Future<void> openAccessSettings() async {}
 
   @override
+  Future<void> scheduleAlertWorker() async {}
+
+  @override
+  Future<void> cancelAlertWorker() async {}
+
+  @override
   Future<UsageTotals> queryRange(DateTime startLocal, DateTime endLocal) async {
     final dayKey = DayRange.formatDay(startLocal);
     return dayData[dayKey] ?? const UsageTotals.zero();

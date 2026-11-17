@@ -51,6 +51,8 @@ abstract class UsageSource {
   Future<bool> hasAccess();
   Future<void> openAccessSettings();
   Future<UsageTotals> queryRange(DateTime startLocal, DateTime endLocal);
+  Future<void> scheduleAlertWorker();
+  Future<void> cancelAlertWorker();
 }
 
 class PlatformUsageSource implements UsageSource {
@@ -92,5 +94,19 @@ class PlatformUsageSource implements UsageSource {
     } catch (_) {
       return const UsageTotals.zero();
     }
+  }
+
+  @override
+  Future<void> scheduleAlertWorker() async {
+    try {
+      await _channel.invokeMethod<void>('scheduleAlertWorker');
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> cancelAlertWorker() async {
+    try {
+      await _channel.invokeMethod<void>('cancelAlertWorker');
+    } catch (_) {}
   }
 }

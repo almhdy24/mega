@@ -10,10 +10,14 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.provider.Settings
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class UsagePlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
     private val io = Executors.newSingleThreadExecutor()
@@ -21,6 +25,7 @@ class UsagePlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
 
     companion object {
         const val CHANNEL_NAME = "dev.elmahdi.mega/usage"
+        const val WORK_NAME = "mega_usage_alerts"
 
         fun registerWith(messenger: BinaryMessenger, context: Context) {
             val channel = MethodChannel(messenger, CHANNEL_NAME)
@@ -53,6 +58,29 @@ class UsagePlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
                     } catch (t: Throwable) {
                         main.post { result.error("QUERY_FAILED", t.message, null) }
                     }
+                }
+            }
+            "scheduleAlertWorker" -> {
+                try {
+                    val workRequest = PeriodicWorkRequestBuilder<UsageWorker>(
+                        15, TimeUnit.MINUTES
+                    ).build()
+                    WorkManager.getInstance(ctx).enqueueUniquePeriodicWork(
+                        WORK_NAME,
+                        ExistingPeriodicWorkPolicy.UPDATE,
+                        workRequest
+                    )
+                    result.success(true)
+                } catch (t: Throwable) {
+                    result.error("WORK_FAILED", t.message, null)
+                }
+            }
+            "cancelAlertWorker" -> {
+                try {
+                    WorkManager.getInstance(ctx).cancelUniqueWork(WORK_NAME)
+                    result.success(true)
+                } catch (t: Throwable) {
+                    result.error("CANCEL_FAILED", t.message, null)
                 }
             }
             else -> result.notImplemented()
