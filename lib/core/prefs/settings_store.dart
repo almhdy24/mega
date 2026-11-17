@@ -17,7 +17,7 @@ class SettingsStore extends ChangeNotifier {
   static const String keyNotifiedCycleStart = 'notified_cycle_start';
   static const String keyNotifiedThresholds = 'notified_thresholds';
 
-  static const String defaultTestBaseUrl = 'https://speedtest.server.example';
+  static const String defaultTestBaseUrl = 'https://fra.speedtest.clouvider.net/backend';
 
   int get bundleBytes => _prefs.getInt(keyBundleBytes) ?? 0;
   set bundleBytes(int value) {

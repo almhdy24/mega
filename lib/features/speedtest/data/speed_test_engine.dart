@@ -102,9 +102,26 @@ class SpeedTestEngine {
     _controller.add(progress);
 
     try {
+      // Auto-detect LibreSpeed PHP backends if /empty returns 404
+      var effectivePing = pingEndpoint;
+      var effectiveDown = downloadEndpoint;
+      var effectiveUp = uploadEndpoint;
+
+      var pingUrl = Uri.parse('$cleanBase$effectivePing');
+      try {
+        final probeReq = await _client!.getUrl(pingUrl);
+        final probeRes = await probeReq.close();
+        await probeRes.drain<void>();
+        if (probeRes.statusCode == 404) {
+          effectivePing = '/empty.php';
+          effectiveDown = '/garbage.php?ckSize=20';
+          effectiveUp = '/empty.php';
+          pingUrl = Uri.parse('$cleanBase$effectivePing');
+        }
+      } catch (_) {}
+
       // 1. PING & JITTER
       // 10 sequential requests over ONE kept-alive connection, discard first
-      final pingUrl = Uri.parse('$cleanBase$pingEndpoint');
       final rtts = <double>[];
 
       for (var i = 0; i < 10; i++) {
@@ -141,7 +158,7 @@ class SpeedTestEngine {
 
       // 2. DOWNLOAD TEST
       // 4 parallel streams, 10s cap, discard first 1.5s warm-up, sample every 200ms
-      final downUrl = Uri.parse('$cleanBase$downloadEndpoint');
+      final downUrl = Uri.parse('$cleanBase$effectiveDown');
       final downMbps = await _runDownload(downUrl, progress);
       if (_isCancelled) return progress;
 
@@ -154,7 +171,7 @@ class SpeedTestEngine {
 
       // 3. UPLOAD TEST
       // 3 parallel POST streams, 8s cap, same warm-up & 200ms sampling, reuse one pre-generated buffer
-      final upUrl = Uri.parse('$cleanBase$uploadEndpoint');
+      final upUrl = Uri.parse('$cleanBase$effectiveUp');
       final upMbps = await _runUpload(upUrl, progress);
       if (_isCancelled) return progress;
 
