@@ -31,4 +31,18 @@ final List<Migration> migrations = [
 
     await db.execute('CREATE INDEX idx_speed_ts ON speed_tests(ts DESC);');
   },
+
+  // Version 2: past bundles history table
+  (Database db) async {
+    await db.execute('''
+      CREATE TABLE bundles (
+        id         INTEGER PRIMARY KEY,
+        start_ms   INTEGER NOT NULL,
+        end_ms     INTEGER NOT NULL,
+        size_bytes INTEGER NOT NULL,
+        used_bytes INTEGER NOT NULL
+      );
+    ''');
+    await db.execute('CREATE INDEX idx_bundles_end ON bundles(end_ms DESC);');
+  },
 ];

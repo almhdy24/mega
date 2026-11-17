@@ -42,6 +42,7 @@ void main() async {
               usageRepository: usageRepository,
               speedRepository: speedTestRepository,
               settings: settingsStore,
+              usageSource: usageSource,
             ),
           ),
           ChangeNotifierProvider<UsageViewModel>(

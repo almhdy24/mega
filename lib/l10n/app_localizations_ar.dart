@@ -223,4 +223,63 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get commonCancel => 'إلغاء';
+
+  @override
+  String homeSafeDailyAllowance(String amount) {
+    return 'تقدر تستهلك اليوم $amount';
+  }
+
+  @override
+  String get homeRenewBundle => 'تجديد الباقة';
+
+  @override
+  String get homeRenewBundleNow => 'تجديد الباقة الآن';
+
+  @override
+  String get homeQuickTest => 'فحص سريع';
+
+  @override
+  String get homeBundleExpired => 'انتهت الباقة';
+
+  @override
+  String homeTodayUsage(String mobile, String wifi) {
+    return 'اليوم: $mobile بيانات · $wifi واي فاي';
+  }
+
+  @override
+  String get bundleSetupTitle => 'ضبط الباقة';
+
+  @override
+  String get bundleValidityDays => 'مدة صلاحية الباقة';
+
+  @override
+  String get bundleValidity1Day => 'يوم واحد (يومي)';
+
+  @override
+  String get bundleValidity7Days => '7 أيام (أسبوعي)';
+
+  @override
+  String get bundleValidity30Days => '30 يوماً (شهري)';
+
+  @override
+  String get bundleAutoRenewLabel => 'تجديد تلقائي عند انتهاء المدة';
+
+  @override
+  String get onboardingWhyTitle => 'لماذا يحتاج ميقا هذا الإذن؟';
+
+  @override
+  String get onboardingWhyDesc =>
+      'ميقا يقرأ استهلاك بياناتك بدقة من إحصائيات النظام مباشرة. بدون إعلانات، بدون تسجيل، بدون خوادم تتبع، ويعمل بالكامل على جهازك.';
+
+  @override
+  String get onboardingGrantButton => 'منح إذن الوصول للاستهلاك';
+
+  @override
+  String get onboardingNext => 'التالي';
+
+  @override
+  String get onboardingSkip => 'تخطي';
+
+  @override
+  String get onboardingStartUsing => 'ابدأ استخدام ميقا';
 }

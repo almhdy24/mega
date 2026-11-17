@@ -3,6 +3,7 @@ import 'package:mega/core/db/migrations.dart';
 import 'package:mega/core/platform/usage_channel.dart';
 import 'package:mega/core/time/day_range.dart';
 import 'package:mega/features/usage/data/usage_repository.dart';
+import 'package:mega/features/usage/domain/past_bundle.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class MockUsageSource implements UsageSource {
@@ -184,6 +185,23 @@ void main() {
       );
       // Combined should preserve unsupported state
       expect(combined.mobileSupported, isFalse);
+    });
+
+    test('savePastBundle stores and prunes older entries beyond 6', () async {
+      for (var i = 1; i <= 8; i++) {
+        await repository.savePastBundle(PastBundle(
+          id: i,
+          startMs: i * 100000,
+          endMs: i * 200000,
+          sizeBytes: 10000,
+          usedBytes: 5000,
+        ));
+      }
+
+      final list = await repository.getPastBundles();
+      expect(list.length, 6);
+      expect(list.first.id, 8);
+      expect(list.last.id, 3);
     });
   });
 }

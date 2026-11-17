@@ -83,5 +83,34 @@
   "commonMbps": "Mbps",
   "commonMs": "ms",
   "commonSave": "Save",
-  "commonCancel": "Cancel"
+  "commonCancel": "Cancel",
+  "homeSafeDailyAllowance": "Safe daily allowance: {amount}",
+  "@homeSafeDailyAllowance": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "homeRenewBundle": "Renew Bundle",
+  "homeRenewBundleNow": "Renew bundle now",
+  "homeQuickTest": "Quick Test",
+  "homeBundleExpired": "Bundle Expired",
+  "homeTodayUsage": "Today: {mobile} Mobile · {wifi} Wi-Fi",
+  "@homeTodayUsage": {
+    "placeholders": {
+      "mobile": { "type": "String" },
+      "wifi": { "type": "String" }
+    }
+  },
+  "bundleSetupTitle": "Set Up Bundle",
+  "bundleValidityDays": "Bundle Validity",
+  "bundleValidity1Day": "1 Day (Daily)",
+  "bundleValidity7Days": "7 Days (Weekly)",
+  "bundleValidity30Days": "30 Days (Monthly)",
+  "bundleAutoRenewLabel": "Auto-renew when period ends",
+  "onboardingWhyTitle": "Why does MEGA need this access?",
+  "onboardingWhyDesc": "MEGA reads your data consumption directly from system stats. Ad-free, login-free, tracker-free, and 100% offline-first on your device.",
+  "onboardingGrantButton": "Grant Usage Access",
+  "onboardingNext": "Next",
+  "onboardingSkip": "Skip",
+  "onboardingStartUsing": "Start Using MEGA"
 }

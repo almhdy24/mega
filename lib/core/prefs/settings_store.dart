@@ -1,13 +1,21 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../time/billing_cycle.dart';
 
 class SettingsStore extends ChangeNotifier {
   final SharedPreferences _prefs;
 
-  SettingsStore(this._prefs);
+  SettingsStore(this._prefs) {
+    _migrateLegacyCycleStartDay();
+  }
 
   static const String keyBundleBytes = 'bundle_bytes';
+  static const String keyBundleStartMs = 'bundle_start_ms';
+  static const String keyBundleValidityDays = 'bundle_validity_days';
+  static const String keyBundleAutoRenew = 'bundle_auto_renew';
+  static const String keyBundleId = 'bundle_id';
   static const String keyCycleStartDay = 'cycle_start_day';
   static const String keyAlertThresholds = 'alert_thresholds';
   static const String keyAlertsEnabled = 'alerts_enabled';
@@ -21,9 +29,55 @@ class SettingsStore extends ChangeNotifier {
 
   static const String defaultTestBaseUrl = 'https://fra.speedtest.clouvider.net/backend';
 
+  void _migrateLegacyCycleStartDay() {
+    if (_prefs.containsKey(keyCycleStartDay) && !_prefs.containsKey(keyBundleStartMs)) {
+      final oldDay = _prefs.getInt(keyCycleStartDay) ?? 1;
+      final cycle = billingCycle(DateTime.now(), oldDay);
+      _prefs.setInt(keyBundleStartMs, cycle.start.millisecondsSinceEpoch);
+      _prefs.setInt(keyBundleValidityDays, 30);
+      _prefs.setBool(keyBundleAutoRenew, true);
+      _prefs.setInt(keyBundleId, 1);
+      _prefs.remove(keyCycleStartDay);
+    }
+  }
+
   int get bundleBytes => _prefs.getInt(keyBundleBytes) ?? 0;
   set bundleBytes(int value) {
     _prefs.setInt(keyBundleBytes, value);
+    notifyListeners();
+  }
+
+  int get bundleStartMs => _prefs.getInt(keyBundleStartMs) ?? 0;
+  set bundleStartMs(int value) {
+    _prefs.setInt(keyBundleStartMs, value);
+    notifyListeners();
+  }
+
+  int get bundleValidityDays => _prefs.getInt(keyBundleValidityDays) ?? 30;
+  set bundleValidityDays(int value) {
+    _prefs.setInt(keyBundleValidityDays, max(1, value));
+    notifyListeners();
+  }
+
+  bool get bundleAutoRenew => _prefs.getBool(keyBundleAutoRenew) ?? true;
+  set bundleAutoRenew(bool value) {
+    _prefs.setBool(keyBundleAutoRenew, value);
+    notifyListeners();
+  }
+
+  int get bundleId => _prefs.getInt(keyBundleId) ?? 1;
+  set bundleId(int value) {
+    _prefs.setInt(keyBundleId, value);
+    notifyListeners();
+  }
+
+  void renewBundleNow({int? newBytes, int? newValidityDays}) {
+    final nextId = bundleId + 1;
+    _prefs.setInt(keyBundleId, nextId);
+    _prefs.setInt(keyBundleStartMs, DateTime.now().millisecondsSinceEpoch);
+    if (newBytes != null) _prefs.setInt(keyBundleBytes, newBytes);
+    if (newValidityDays != null) _prefs.setInt(keyBundleValidityDays, max(1, newValidityDays));
+    _prefs.setString(keyNotifiedThresholds, '[]');
     notifyListeners();
   }
 

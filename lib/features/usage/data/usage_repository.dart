@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../../core/platform/usage_channel.dart';
 import '../../../core/time/day_range.dart';
 import '../domain/daily_usage.dart';
+import '../domain/past_bundle.dart';
 
 class UsageRepository {
   final Database db;
@@ -123,5 +124,29 @@ class UsageRepository {
     );
 
     return rows.map((r) => DailyUsage.fromMap(r)).toList();
+  }
+
+  /// Save a completed bundle period and keep at most the last 6 entries.
+  Future<void> savePastBundle(PastBundle bundle) async {
+    await db.insert(
+      'bundles',
+      bundle.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.rawDelete('''
+      DELETE FROM bundles WHERE id NOT IN (
+        SELECT id FROM bundles ORDER BY end_ms DESC LIMIT 6
+      )
+    ''');
+  }
+
+  /// Get the last [limit] past bundles (most recent first).
+  Future<List<PastBundle>> getPastBundles({int limit = 6}) async {
+    final rows = await db.query(
+      'bundles',
+      orderBy: 'end_ms DESC',
+      limit: limit,
+    );
+    return rows.map((r) => PastBundle.fromMap(r)).toList();
   }
 }

@@ -83,5 +83,34 @@
   "commonMbps": "ميجابت/ث",
   "commonMs": "ملي ثانية",
   "commonSave": "حفظ",
-  "commonCancel": "إلغاء"
+  "commonCancel": "إلغاء",
+  "homeSafeDailyAllowance": "تقدر تستهلك اليوم {amount}",
+  "@homeSafeDailyAllowance": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "homeRenewBundle": "تجديد الباقة",
+  "homeRenewBundleNow": "تجديد الباقة الآن",
+  "homeQuickTest": "فحص سريع",
+  "homeBundleExpired": "انتهت الباقة",
+  "homeTodayUsage": "اليوم: {mobile} بيانات · {wifi} واي فاي",
+  "@homeTodayUsage": {
+    "placeholders": {
+      "mobile": { "type": "String" },
+      "wifi": { "type": "String" }
+    }
+  },
+  "bundleSetupTitle": "ضبط الباقة",
+  "bundleValidityDays": "مدة صلاحية الباقة",
+  "bundleValidity1Day": "يوم واحد (يومي)",
+  "bundleValidity7Days": "7 أيام (أسبوعي)",
+  "bundleValidity30Days": "30 يوماً (شهري)",
+  "bundleAutoRenewLabel": "تجديد تلقائي عند انتهاء المدة",
+  "onboardingWhyTitle": "لماذا يحتاج ميقا هذا الإذن؟",
+  "onboardingWhyDesc": "ميقا يقرأ استهلاك بياناتك بدقة من إحصائيات النظام مباشرة. بدون إعلانات، بدون تسجيل، بدون خوادم تتبع، ويعمل بالكامل على جهازك.",
+  "onboardingGrantButton": "منح إذن الوصول للاستهلاك",
+  "onboardingNext": "التالي",
+  "onboardingSkip": "تخطي",
+  "onboardingStartUsing": "ابدأ استخدام ميقا"
 }

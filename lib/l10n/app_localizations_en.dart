@@ -219,4 +219,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancel';
+
+  @override
+  String homeSafeDailyAllowance(String amount) {
+    return 'Safe daily allowance: $amount';
+  }
+
+  @override
+  String get homeRenewBundle => 'Renew Bundle';
+
+  @override
+  String get homeRenewBundleNow => 'Renew bundle now';
+
+  @override
+  String get homeQuickTest => 'Quick Test';
+
+  @override
+  String get homeBundleExpired => 'Bundle Expired';
+
+  @override
+  String homeTodayUsage(String mobile, String wifi) {
+    return 'Today: $mobile Mobile · $wifi Wi-Fi';
+  }
+
+  @override
+  String get bundleSetupTitle => 'Set Up Bundle';
+
+  @override
+  String get bundleValidityDays => 'Bundle Validity';
+
+  @override
+  String get bundleValidity1Day => '1 Day (Daily)';
+
+  @override
+  String get bundleValidity7Days => '7 Days (Weekly)';
+
+  @override
+  String get bundleValidity30Days => '30 Days (Monthly)';
+
+  @override
+  String get bundleAutoRenewLabel => 'Auto-renew when period ends';
+
+  @override
+  String get onboardingWhyTitle => 'Why does MEGA need this access?';
+
+  @override
+  String get onboardingWhyDesc =>
+      'MEGA reads your data consumption directly from system stats. Ad-free, login-free, tracker-free, and 100% offline-first on your device.';
+
+  @override
+  String get onboardingGrantButton => 'Grant Usage Access';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingStartUsing => 'Start Using MEGA';
 }

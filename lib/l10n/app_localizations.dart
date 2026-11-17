@@ -481,6 +481,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get commonCancel;
+
+  /// No description provided for @homeSafeDailyAllowance.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe daily allowance: {amount}'**
+  String homeSafeDailyAllowance(String amount);
+
+  /// No description provided for @homeRenewBundle.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew Bundle'**
+  String get homeRenewBundle;
+
+  /// No description provided for @homeRenewBundleNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew bundle now'**
+  String get homeRenewBundleNow;
+
+  /// No description provided for @homeQuickTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Test'**
+  String get homeQuickTest;
+
+  /// No description provided for @homeBundleExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Bundle Expired'**
+  String get homeBundleExpired;
+
+  /// No description provided for @homeTodayUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {mobile} Mobile · {wifi} Wi-Fi'**
+  String homeTodayUsage(String mobile, String wifi);
+
+  /// No description provided for @bundleSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up Bundle'**
+  String get bundleSetupTitle;
+
+  /// No description provided for @bundleValidityDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Bundle Validity'**
+  String get bundleValidityDays;
+
+  /// No description provided for @bundleValidity1Day.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Day (Daily)'**
+  String get bundleValidity1Day;
+
+  /// No description provided for @bundleValidity7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'7 Days (Weekly)'**
+  String get bundleValidity7Days;
+
+  /// No description provided for @bundleValidity30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'30 Days (Monthly)'**
+  String get bundleValidity30Days;
+
+  /// No description provided for @bundleAutoRenewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-renew when period ends'**
+  String get bundleAutoRenewLabel;
+
+  /// No description provided for @onboardingWhyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why does MEGA need this access?'**
+  String get onboardingWhyTitle;
+
+  /// No description provided for @onboardingWhyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'MEGA reads your data consumption directly from system stats. Ad-free, login-free, tracker-free, and 100% offline-first on your device.'**
+  String get onboardingWhyDesc;
+
+  /// No description provided for @onboardingGrantButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant Usage Access'**
+  String get onboardingGrantButton;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingStartUsing.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Using MEGA'**
+  String get onboardingStartUsing;
 }
 
 class _AppLocalizationsDelegate
