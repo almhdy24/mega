@@ -16,6 +16,8 @@ class SettingsStore extends ChangeNotifier {
   static const String keyTestBaseUrl = 'test_base_url';
   static const String keyNotifiedCycleStart = 'notified_cycle_start';
   static const String keyNotifiedThresholds = 'notified_thresholds';
+  static const String keySkipMobileWarning = 'skip_mobile_warning';
+  static const String keyLastFullSyncMs = 'last_full_sync_ms';
 
   static const String defaultTestBaseUrl = 'https://fra.speedtest.clouvider.net/backend';
 
@@ -98,6 +100,18 @@ class SettingsStore extends ChangeNotifier {
   int get notifiedCycleStart => _prefs.getInt(keyNotifiedCycleStart) ?? 0;
   set notifiedCycleStart(int epochMs) {
     _prefs.setInt(keyNotifiedCycleStart, epochMs);
+  }
+
+  bool get skipMobileWarning => _prefs.getBool(keySkipMobileWarning) ?? false;
+  set skipMobileWarning(bool value) {
+    _prefs.setBool(keySkipMobileWarning, value);
+    notifyListeners();
+  }
+
+  int get lastFullSyncMs => _prefs.getInt(keyLastFullSyncMs) ?? 0;
+  set lastFullSyncMs(int value) {
+    _prefs.setInt(keyLastFullSyncMs, value);
+    notifyListeners();
   }
 
   Set<int> get notifiedThresholds {

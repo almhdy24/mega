@@ -5,6 +5,7 @@ import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -37,6 +38,23 @@ class UsagePlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "hasUsageAccess" -> result.success(UsageQuery.hasAccess(ctx))
+            "networkType" -> {
+                try {
+                    val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                    val net = cm?.activeNetwork
+                    val caps = cm?.getNetworkCapabilities(net)
+                    val type = when {
+                        caps == null -> "none"
+                        caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                        caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "mobile"
+                        caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+                        else -> "none"
+                    }
+                    result.success(type)
+                } catch (t: Throwable) {
+                    result.success("none")
+                }
+            }
             "openUsageAccessSettings" -> {
                 try {
                     ctx.startActivity(

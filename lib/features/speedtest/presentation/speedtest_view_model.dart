@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/platform/usage_channel.dart';
 import '../../../core/prefs/settings_store.dart';
 import '../data/speed_test_engine.dart';
 import '../data/speedtest_repository.dart';
@@ -8,11 +9,13 @@ import '../domain/speed_test_record.dart';
 class SpeedTestViewModel extends ChangeNotifier {
   final SpeedTestRepository repository;
   final SettingsStore settings;
+  final UsageSource? usageSource;
   final SpeedTestEngine _engine = SpeedTestEngine();
 
   SpeedTestViewModel({
     required this.repository,
     required this.settings,
+    this.usageSource,
   }) {
     _subscription = _engine.progressStream.listen(_onProgress);
   }
@@ -21,6 +24,9 @@ class SpeedTestViewModel extends ChangeNotifier {
 
   SpeedTestProgress _progress = const SpeedTestProgress(phase: SpeedTestPhase.idle);
   SpeedTestProgress get progress => _progress;
+
+  String _currentNetworkType = 'mobile';
+  String get currentNetworkType => _currentNetworkType;
 
   List<SpeedTestRecord> _history = [];
   List<SpeedTestRecord> get history => _history;
@@ -35,6 +41,15 @@ class SpeedTestViewModel extends ChangeNotifier {
 
   Future<void> init() async {
     await loadHistory();
+    await detectNetworkType();
+  }
+
+  Future<String> detectNetworkType() async {
+    if (usageSource != null) {
+      _currentNetworkType = await usageSource!.networkType();
+      notifyListeners();
+    }
+    return _currentNetworkType;
   }
 
   Future<void> loadHistory() async {
@@ -59,15 +74,20 @@ class SpeedTestViewModel extends ChangeNotifier {
       jitterMs: p.jitterMs,
       downMbps: p.downMbps,
       upMbps: p.upMbps,
-      networkType: 'mobile', // Saved with active network context
+      networkType: _currentNetworkType,
       server: settings.testBaseUrl,
     );
     await repository.insertTest(record);
     await loadHistory();
   }
 
-  Future<void> startTest({String networkType = 'mobile'}) async {
+  Future<void> startTest({String? networkType}) async {
     if (isRunning) return;
+    if (networkType != null) {
+      _currentNetworkType = networkType;
+    } else if (usageSource != null) {
+      _currentNetworkType = await usageSource!.networkType();
+    }
     _progress = const SpeedTestProgress(phase: SpeedTestPhase.pinging);
     notifyListeners();
 

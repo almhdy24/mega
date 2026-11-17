@@ -15,12 +15,13 @@ class UsageRepository {
   /// Snapshot rule: queries the system for the last [days] days (default 35)
   /// and upserts into usage_daily using MAX(existing, new) per column.
   /// A day that later reads 0 (history expired) will never overwrite a non-zero stored value.
-  Future<void> syncSnapshots({int days = 35, DateTime? referenceNow}) async {
+  Future<UsageResultStatus> syncSnapshots({int days = 35, DateTime? referenceNow}) async {
     final hasAccess = await usageSource.hasAccess();
-    if (!hasAccess) return;
+    if (!hasAccess) return UsageResultStatus.denied;
 
     final now = referenceNow ?? DateTime.now();
     final nowMs = now.millisecondsSinceEpoch;
+    var finalStatus = UsageResultStatus.ok;
 
     // Use a transaction/batch for performance and atomicity
     await db.transaction((txn) async {
@@ -30,7 +31,14 @@ class UsageRepository {
         final startLocal = DayRange.startOfDay(targetDate);
         final endLocal = DayRange.endOfDay(targetDate);
 
-        final totals = await usageSource.queryRange(startLocal, endLocal);
+        final result = await usageSource.queryRange(startLocal, endLocal);
+        if (result.status != UsageResultStatus.ok && result.status != UsageResultStatus.unsupported) {
+          finalStatus = result.status;
+        } else if (result.status == UsageResultStatus.unsupported && finalStatus == UsageResultStatus.ok) {
+          finalStatus = UsageResultStatus.unsupported;
+        }
+
+        final totals = result.totals;
 
         // Upsert with MAX logic
         await txn.rawInsert('''
@@ -52,6 +60,14 @@ class UsageRepository {
         ]);
       }
     });
+
+    return finalStatus;
+  }
+
+  /// Check whether usage_daily table is currently empty
+  Future<bool> isUsageEmpty() async {
+    final count = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM usage_daily')) ?? 0;
+    return count == 0;
   }
 
   /// Get daily usage entry for a specific 'YYYY-MM-DD'

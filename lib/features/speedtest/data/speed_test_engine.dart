@@ -335,17 +335,25 @@ class SpeedTestEngine {
       }
     });
 
+    // Cap request body at 2.5 MB (10 chunks of 256 KB) to stay under PHP post_max_size
+    const chunksPerRequest = 10;
+    const bodySize = chunkSize * chunksPerRequest;
+
     // 3 parallel upload streams
     Future<void> uploadWorker() async {
       while (sw.elapsed < durationCap && !_isCancelled) {
         try {
           final req = await _client!.postUrl(url);
           req.headers.contentType = ContentType.binary;
-          req.contentLength = chunkSize * 10; // 2.5 MB per request body
+          req.contentLength = bodySize;
 
-          for (var i = 0; i < 10; i++) {
-            if (sw.elapsed >= durationCap || _isCancelled) break;
+          for (var i = 0; i < chunksPerRequest; i++) {
+            if (_isCancelled) {
+              req.abort();
+              return;
+            }
             req.add(chunk);
+            await req.flush();
             totalBytesUploaded += chunkSize;
           }
 

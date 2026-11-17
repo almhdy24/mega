@@ -54,37 +54,96 @@ void main() async {
             create: (_) => SpeedTestViewModel(
               repository: speedTestRepository,
               settings: settingsStore,
+              usageSource: usageSource,
             ),
           ),
         ],
         child: const MegaApp(),
       ),
     );
-  } catch (error, stackTrace) {
+  } catch (error) {
     runApp(
       MaterialApp(
         debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF0F172A),
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFF38BDF8),
+            surface: Color(0xFF1E293B),
+          ),
+        ),
         home: Scaffold(
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'حدث خطأ أثناء تشغيل التطبيق | Startup Error',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.error_outline_rounded,
+                        color: Colors.redAccent,
+                        size: 48,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  SelectableText(
-                    '$error\n\n$stackTrace',
-                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    const Text(
+                      'حدث خطأ غير متوقع أثناء تشغيل التطبيق',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'An unexpected error occurred while starting the app.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: () => main(),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('إعادة المحاولة / Retry'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF38BDF8),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Theme(
+                      data: ThemeData.dark().copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        title: const Text(
+                          'تفاصيل الخطأ / Technical details',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: SelectableText(
+                              '$error',
+                              style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: Colors.white70),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

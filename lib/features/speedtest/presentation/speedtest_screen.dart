@@ -24,38 +24,91 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     });
   }
 
-  void _confirmAndStart(BuildContext context, SpeedTestViewModel vm, AppLocalizations l10n) {
-    showDialog<bool>(
+  Future<void> _confirmAndStart(
+    BuildContext context,
+    SpeedTestViewModel vm,
+    AppLocalizations l10n,
+  ) async {
+    final netType = await vm.detectNetworkType();
+    if (netType != 'mobile' || vm.settings.skipMobileWarning) {
+      vm.startTest(networkType: netType);
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    var dontAskAgain = false;
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.info_outline, color: MegaColors.primary),
-            const SizedBox(width: 8),
-            Text(l10n.speedMobileWarningTitle, style: const TextStyle(fontSize: 16)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.info_outline, color: MegaColors.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(l10n.speedMobileWarningTitle, style: const TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.speedMobileWarningBody('15-25 MB'),
+                style: const TextStyle(fontSize: 14, height: 1.4),
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () {
+                  setDialogState(() {
+                    dontAskAgain = !dontAskAgain;
+                  });
+                },
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: dontAskAgain,
+                      onChanged: (v) {
+                        setDialogState(() {
+                          dontAskAgain = v ?? false;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    const Expanded(
+                      child: Text(
+                        'عدم السؤال مرة أخرى / Don\'t ask again',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(backgroundColor: MegaColors.primary),
+              child: Text(l10n.speedProceed),
+            ),
           ],
         ),
-        content: Text(
-          l10n.speedMobileWarningBody('15-25 MB'),
-          style: const TextStyle(fontSize: 14, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: MegaColors.primary),
-            child: Text(l10n.speedProceed),
-          ),
-        ],
       ),
-    ).then((confirmed) {
-      if (confirmed == true) {
-        vm.startTest();
+    );
+
+    if (confirmed == true) {
+      if (dontAskAgain) {
+        vm.settings.skipMobileWarning = true;
       }
-    });
+      vm.startTest(networkType: netType);
+    }
   }
 
   @override

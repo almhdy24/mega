@@ -24,6 +24,12 @@ class UsageViewModel extends ChangeNotifier {
   bool _isMobileSupported = true;
   bool get isMobileSupported => _isMobileSupported;
 
+  UsageResultStatus _status = UsageResultStatus.ok;
+  UsageResultStatus get status => _status;
+
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
   UsageTotals _today = const UsageTotals.zero();
   UsageTotals get todayTotals => _today;
 
@@ -42,25 +48,50 @@ class UsageViewModel extends ChangeNotifier {
 
   Future<void> refresh() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
       _hasAccess = await repository.usageSource.hasAccess();
-
-      if (_hasAccess) {
-        // Check if mobile stats are supported on this Android OS version
-        final now = DateTime.now();
-        final check = await repository.usageSource.queryRange(
-          DayRange.startOfDay(now),
-          DayRange.endOfDay(now),
-        );
-        _isMobileSupported = check.mobileSupported;
-
-        // Sync system usage into SQLite
-        await repository.syncSnapshots(days: 35);
+      if (!_hasAccess) {
+        _status = UsageResultStatus.denied;
+        _isLoading = false;
+        notifyListeners();
+        return;
       }
 
       final now = DateTime.now();
+
+      // Check if mobile stats are supported on this Android OS version
+      final check = await repository.usageSource.queryRange(
+        DayRange.startOfDay(now),
+        DayRange.endOfDay(now),
+      );
+      _isMobileSupported = check.totals.mobileSupported;
+      if (check.status == UsageResultStatus.unsupported) {
+        _status = UsageResultStatus.unsupported;
+      } else if (check.status == UsageResultStatus.error) {
+        _status = UsageResultStatus.error;
+        _errorMessage = check.message;
+      } else {
+        _status = UsageResultStatus.ok;
+      }
+
+      // Adaptive sync: full 35-day sync only once per day or when DB is empty.
+      // Normal refresh syncs only today and yesterday (days: 2).
+      final isDbEmpty = await repository.isUsageEmpty();
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      final shouldFullSync =
+          isDbEmpty || (now.millisecondsSinceEpoch - settings.lastFullSyncMs > oneDayMs);
+
+      if (shouldFullSync) {
+        final syncStatus = await repository.syncSnapshots(days: 35, referenceNow: now);
+        if (syncStatus == UsageResultStatus.ok || syncStatus == UsageResultStatus.unsupported) {
+          settings.lastFullSyncMs = now.millisecondsSinceEpoch;
+        }
+      } else {
+        await repository.syncSnapshots(days: 2, referenceNow: now);
+      }
 
       // Today
       final todayStart = DayRange.startOfDay(now);
@@ -81,8 +112,9 @@ class UsageViewModel extends ChangeNotifier {
 
       // 30 days chart
       _chartData = await repository.getLast30Days(referenceNow: now);
-    } catch (_) {
-      // Graceful error state handling
+    } catch (e) {
+      _status = UsageResultStatus.error;
+      _errorMessage = e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();

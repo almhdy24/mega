@@ -52,10 +52,47 @@ class UsageTotals {
   }
 }
 
+enum UsageResultStatus {
+  ok,
+  denied,
+  unsupported,
+  error,
+}
+
+class UsageResult {
+  final UsageResultStatus status;
+  final UsageTotals totals;
+  final String? message;
+
+  const UsageResult({
+    required this.status,
+    this.totals = const UsageTotals.zero(),
+    this.message,
+  });
+
+  const UsageResult.ok(this.totals)
+      : status = UsageResultStatus.ok,
+        message = null;
+
+  const UsageResult.denied()
+      : status = UsageResultStatus.denied,
+        totals = const UsageTotals.zero(),
+        message = null;
+
+  const UsageResult.unsupported([this.totals = const UsageTotals.zero(mobileSupported: false)])
+      : status = UsageResultStatus.unsupported,
+        message = null;
+
+  const UsageResult.error(this.message)
+      : status = UsageResultStatus.error,
+        totals = const UsageTotals.zero();
+}
+
 abstract class UsageSource {
   Future<bool> hasAccess();
   Future<void> openAccessSettings();
-  Future<UsageTotals> queryRange(DateTime startLocal, DateTime endLocal);
+  Future<UsageResult> queryRange(DateTime startLocal, DateTime endLocal);
+  Future<String> networkType();
   Future<void> scheduleAlertWorker();
   Future<void> cancelAlertWorker();
 }
@@ -77,28 +114,56 @@ class PlatformUsageSource implements UsageSource {
   Future<void> openAccessSettings() async {
     try {
       await _channel.invokeMethod<void>('openUsageAccessSettings');
-    } catch (_) {}
+    } catch (e) {
+      throw PlatformException(code: 'SETTINGS_ERROR', message: e.toString());
+    }
   }
 
   @override
-  Future<UsageTotals> queryRange(DateTime startLocal, DateTime endLocal) async {
+  Future<String> networkType() async {
     try {
+      final res = await _channel.invokeMethod<String>('networkType');
+      return res ?? 'none';
+    } catch (_) {
+      return 'none';
+    }
+  }
+
+  @override
+  Future<UsageResult> queryRange(DateTime startLocal, DateTime endLocal) async {
+    try {
+      final access = await hasAccess();
+      if (!access) {
+        return const UsageResult.denied();
+      }
+
       final res = await _channel.invokeMapMethod<String, dynamic>('queryRange', {
         'startMs': startLocal.millisecondsSinceEpoch,
         'endMs': endLocal.millisecondsSinceEpoch,
       });
 
-      if (res == null) return const UsageTotals.zero();
+      if (res == null) {
+        return const UsageResult.error('استجابة فارغة من النظام');
+      }
 
-      return UsageTotals(
+      final mobileSupported = (res['mobileSupported'] as bool?) ?? true;
+      final totals = UsageTotals(
         mobileRx: (res['mobileRx'] as num?)?.toInt() ?? 0,
         mobileTx: (res['mobileTx'] as num?)?.toInt() ?? 0,
         wifiRx: (res['wifiRx'] as num?)?.toInt() ?? 0,
         wifiTx: (res['wifiTx'] as num?)?.toInt() ?? 0,
-        mobileSupported: (res['mobileSupported'] as bool?) ?? true,
+        mobileSupported: mobileSupported,
       );
-    } catch (_) {
-      return const UsageTotals.zero();
+
+      if (!mobileSupported) {
+        return UsageResult.unsupported(totals);
+      }
+
+      return UsageResult.ok(totals);
+    } on PlatformException catch (e) {
+      return UsageResult.error(e.message ?? e.code);
+    } catch (e) {
+      return UsageResult.error(e.toString());
     }
   }
 
@@ -106,13 +171,17 @@ class PlatformUsageSource implements UsageSource {
   Future<void> scheduleAlertWorker() async {
     try {
       await _channel.invokeMethod<void>('scheduleAlertWorker');
-    } catch (_) {}
+    } catch (e) {
+      throw PlatformException(code: 'WORKER_ERROR', message: e.toString());
+    }
   }
 
   @override
   Future<void> cancelAlertWorker() async {
     try {
       await _channel.invokeMethod<void>('cancelAlertWorker');
-    } catch (_) {}
+    } catch (e) {
+      throw PlatformException(code: 'WORKER_ERROR', message: e.toString());
+    }
   }
 }

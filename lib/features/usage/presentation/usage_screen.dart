@@ -65,10 +65,41 @@ class _UsageScreenState extends State<UsageScreen> with WidgetsBindingObserver {
             ] else if (!vm.isMobileSupported) ...[
               _buildUnsupportedBanner(context, l10n),
               const SizedBox(height: 16),
+            ] else if (vm.status == UsageResultStatus.error && vm.errorMessage != null) ...[
+              _buildErrorBanner(context, vm),
+              const SizedBox(height: 16),
             ],
             _buildPeriodSelector(context, l10n, isArabic, vm),
             const SizedBox(height: 20),
             _buildChartSection(context, l10n, isArabic, vm),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner(
+    BuildContext context,
+    UsageViewModel vm,
+  ) {
+    return Card(
+      color: MegaColors.danger.withValues(alpha: 0.12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: MegaColors.danger.withValues(alpha: 0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(14),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, color: MegaColors.danger, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'تعذر قراءة الاستهلاك: ${vm.errorMessage}',
+                style: const TextStyle(fontSize: 12, height: 1.3),
+              ),
+            ),
           ],
         ),
       ),

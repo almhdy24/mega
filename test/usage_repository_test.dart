@@ -22,9 +22,16 @@ class MockUsageSource implements UsageSource {
   Future<void> cancelAlertWorker() async {}
 
   @override
-  Future<UsageTotals> queryRange(DateTime startLocal, DateTime endLocal) async {
+  Future<String> networkType() async => 'wifi';
+
+  @override
+  Future<UsageResult> queryRange(DateTime startLocal, DateTime endLocal) async {
     final dayKey = DayRange.formatDay(startLocal);
-    return dayData[dayKey] ?? const UsageTotals.zero();
+    final totals = dayData[dayKey] ?? const UsageTotals.zero();
+    if (!totals.mobileSupported) {
+      return UsageResult.unsupported(totals);
+    }
+    return UsageResult.ok(totals);
   }
 }
 
