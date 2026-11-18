@@ -1,7 +1,7 @@
 name: mega
 description: "MEGA | ميقا - Free, open-source, ultra-light Android app to test internet speed and track data usage."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.13.7
