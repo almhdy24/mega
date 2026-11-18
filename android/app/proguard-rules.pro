@@ -32,8 +32,8 @@
 -keep class kotlinx.coroutines.** { *; }
 
 # Keep native app classes and workers
--keep class dev.elmahdi.mega.** { *; }
--keepclassmembers class dev.elmahdi.mega.** { *; }
+-keep class com.elmahdi.mega.** { *; }
+-keepclassmembers class com.elmahdi.mega.** { *; }
 
 # Preserve annotations and attributes
 -keepattributes *Annotation*,EnclosingMethod,InnerClasses,Signature

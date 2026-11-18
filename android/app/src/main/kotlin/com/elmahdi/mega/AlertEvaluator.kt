@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 data class AlertRule(
     val id: String,

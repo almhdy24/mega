@@ -121,7 +121,7 @@ abstract class UsageSource {
 }
 
 class PlatformUsageSource implements UsageSource {
-  static const MethodChannel _channel = MethodChannel('dev.elmahdi.mega/usage');
+  static const MethodChannel _channel = MethodChannel('com.elmahdi.mega/usage');
 
   @override
   Future<bool> hasAccess() async {

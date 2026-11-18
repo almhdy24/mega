@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import android.content.Context
 import android.content.Intent
@@ -11,7 +11,7 @@ import io.flutter.plugin.common.MethodChannel
 class LiveMonitorPlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
 
     companion object {
-        const val CHANNEL_NAME = "dev.elmahdi.mega/live_monitor"
+        const val CHANNEL_NAME = "com.elmahdi.mega/live_monitor"
 
         fun registerWith(messenger: BinaryMessenger, context: Context) {
             val channel = MethodChannel(messenger, CHANNEL_NAME)

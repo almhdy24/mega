@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

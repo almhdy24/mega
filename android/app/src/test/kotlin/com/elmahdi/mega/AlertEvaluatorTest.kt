@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

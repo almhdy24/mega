@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class LiveMonitorChannel {
-  static const MethodChannel _channel = MethodChannel('dev.elmahdi.mega/live_monitor');
+  static const MethodChannel _channel = MethodChannel('com.elmahdi.mega/live_monitor');
 
   static Future<bool> start() async {
     try {

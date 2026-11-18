@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import android.content.Context
 import android.content.SharedPreferences

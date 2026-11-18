@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import kotlin.math.ceil
 import kotlin.math.max

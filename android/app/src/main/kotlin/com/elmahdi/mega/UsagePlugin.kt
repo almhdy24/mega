@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import android.app.AppOpsManager
 import android.app.usage.NetworkStats
@@ -26,7 +26,7 @@ class UsagePlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
     private val main = Handler(Looper.getMainLooper())
 
     companion object {
-        const val CHANNEL_NAME = "dev.elmahdi.mega/usage"
+        const val CHANNEL_NAME = "com.elmahdi.mega/usage"
         const val WORK_NAME = "mega_usage_alerts"
 
         fun registerWith(messenger: BinaryMessenger, context: Context) {

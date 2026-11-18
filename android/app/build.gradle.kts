@@ -14,7 +14,7 @@ if (hasKeyProperties) {
 }
 
 android {
-    namespace = "dev.elmahdi.mega"
+    namespace = "com.elmahdi.mega"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
     testBuildType = "release"
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "dev.elmahdi.mega"
+        applicationId = "com.elmahdi.mega"
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

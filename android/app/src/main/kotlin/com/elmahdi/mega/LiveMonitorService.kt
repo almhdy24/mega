@@ -1,4 +1,4 @@
-package dev.elmahdi.mega
+package com.elmahdi.mega
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -35,9 +35,9 @@ class LiveMonitorService : Service() {
         const val CHANNEL_NAME = "عداد السرعة الحي | Live Speed"
         const val NOTIFICATION_ID = 1001
 
-        const val ACTION_START = "dev.elmahdi.mega.START_MONITOR"
-        const val ACTION_STOP = "dev.elmahdi.mega.STOP_MONITOR"
-        const val ACTION_APPLY = "dev.elmahdi.mega.APPLY_SETTINGS"
+        const val ACTION_START = "com.elmahdi.mega.START_MONITOR"
+        const val ACTION_STOP = "com.elmahdi.mega.STOP_MONITOR"
+        const val ACTION_APPLY = "com.elmahdi.mega.APPLY_SETTINGS"
 
         @Volatile
         var isRunning: Boolean = false
