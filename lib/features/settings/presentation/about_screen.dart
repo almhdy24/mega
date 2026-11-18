@@ -125,7 +125,7 @@ class AboutScreen extends StatelessWidget {
                 const Divider(height: 1),
                 _buildInfoTile(
                   title: isArabic ? 'البريد الإلكتروني' : 'Contact',
-                  value: 'contact@almhdy24.com',
+                  value: 'support@almhdy24.com',
                   icon: Icons.mail_outline,
                 ),
                 const Divider(height: 1),
