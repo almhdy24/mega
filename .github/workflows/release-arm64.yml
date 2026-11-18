@@ -66,16 +66,27 @@ jobs:
       - name: Build arm64 release APK
         run: flutter build apk --release --split-per-abi --target-platform android-arm64 --obfuscate --split-debug-info=build/symbols --android-skip-build-dependency-validation
 
-      - name: Verify APK and Signature
+      - name: Build release App Bundle (AAB)
+        run: flutter build appbundle --release --obfuscate --split-debug-info=build/symbols --android-skip-build-dependency-validation
+
+      - name: Verify APK, AAB and Signature
         run: |
           APK="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          AAB="build/app/outputs/bundle/release/app-release.aab"
           if [ ! -f "$APK" ]; then
             echo "ERROR: Expected APK not found at $APK"
+            exit 1
+          fi
+          if [ ! -f "$AAB" ]; then
+            echo "ERROR: Expected AAB not found at $AAB"
             exit 1
           fi
 
           echo "### ARM64 Release APK Size" >> $GITHUB_STEP_SUMMARY
           ls -lh "$APK" | awk '{printf "- **File:** %s\n- **Size:** %s (%.2f MB)\n", $9, $5, $5/1048576}' >> $GITHUB_STEP_SUMMARY
+
+          echo "### Release App Bundle (AAB) Size" >> $GITHUB_STEP_SUMMARY
+          ls -lh "$AAB" | awk '{printf "- **File:** %s\n- **Size:** %s (%.2f MB)\n", $9, $5, $5/1048576}' >> $GITHUB_STEP_SUMMARY
 
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
           if [ -z "$APKSIGNER" ]; then
@@ -92,15 +103,22 @@ jobs:
           fi
 
           if ! echo "$CERT_OUTPUT" | grep -q "CN=Elmahdi ABDALLH"; then
-            echo "ERROR: Expected signing subject CN=Elmahdi ABDALLH not found!"
+            echo "ERROR: Expected signing subject CN=Elmahdi ABDALLH not found in APK!"
             echo "$CERT_OUTPUT"
             exit 1
           fi
 
-          echo "Signature verified: CN=Elmahdi ABDALLH"
+          echo "APK Signature verified: CN=Elmahdi ABDALLH"
           echo '```text' >> $GITHUB_STEP_SUMMARY
           echo "$CERT_OUTPUT" | grep "Signer #1" >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+          echo "Verifying AAB signature..."
+          if ! jarsigner -verify -verbose -certs "$AAB" | grep -q "CN=Elmahdi ABDALLH"; then
+            echo "ERROR: Expected signing subject CN=Elmahdi ABDALLH not found in AAB!"
+            exit 1
+          fi
+          echo "AAB Signature verified: CN=Elmahdi ABDALLH"
 
       - name: Cleanup signing credentials
         if: always()
@@ -114,9 +132,18 @@ jobs:
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           retention-days: 30
 
+      - name: Upload release App Bundle (AAB)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
       - name: Publish to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          files: |
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/bundle/release/app-release.aab
           generate_release_notes: true
