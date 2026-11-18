@@ -309,4 +309,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveNotificationBatteryHelp => 'If Live Notification Disappears';
+
+  @override
+  String get onboardingPermissionsTitle => 'Required Permissions for MEGA';
+
+  @override
+  String get onboardingPermissionsDesc =>
+      'MEGA requires usage statistics and notification access to display the real-time speed meter in your status bar and calculate bundle usage accurately:';
+
+  @override
+  String get onboardingUsagePermTitle => 'Data Usage Access';
+
+  @override
+  String get onboardingUsagePermDesc =>
+      'To calculate local cellular and Wi-Fi bundle consumption directly from system kernel.';
+
+  @override
+  String get onboardingNotifPermTitle => 'Notifications & Status Bar';
+
+  @override
+  String get onboardingNotifPermDesc =>
+      'To display the real-time status bar speed icon and receive threshold alerts.';
+
+  @override
+  String get onboardingPermGranted => 'Enabled';
+
+  @override
+  String get onboardingPermGrantAction => 'Enable Access';
+
+  @override
+  String get onboardingAutoStartLiveNotice =>
+      'Real-time status bar speed meter will be enabled automatically.';
 }

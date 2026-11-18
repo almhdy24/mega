@@ -122,5 +122,14 @@
   "liveNotificationTitle": "Live Speed & Notification",
   "liveNotificationDesc": "Show live speed in status bar and ongoing notification",
   "liveNotificationSettings": "Live Notification Settings",
-  "liveNotificationBatteryHelp": "If Live Notification Disappears"
+  "liveNotificationBatteryHelp": "If Live Notification Disappears",
+  "onboardingPermissionsTitle": "Required Permissions for MEGA",
+  "onboardingPermissionsDesc": "MEGA requires usage statistics and notification access to display the real-time speed meter in your status bar and calculate bundle usage accurately:",
+  "onboardingUsagePermTitle": "Data Usage Access",
+  "onboardingUsagePermDesc": "To calculate local cellular and Wi-Fi bundle consumption directly from system kernel.",
+  "onboardingNotifPermTitle": "Notifications & Status Bar",
+  "onboardingNotifPermDesc": "To display the real-time status bar speed icon and receive threshold alerts.",
+  "onboardingPermGranted": "Enabled",
+  "onboardingPermGrantAction": "Enable Access",
+  "onboardingAutoStartLiveNotice": "Real-time status bar speed meter will be enabled automatically."
 }

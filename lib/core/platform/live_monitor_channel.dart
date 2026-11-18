@@ -39,6 +39,30 @@ class LiveMonitorChannel {
     }
   }
 
+  static Future<bool> hasNotificationPermission() async {
+    try {
+      final res = await _channel.invokeMethod<bool>('hasNotificationPermission');
+      return res ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  static Future<bool> requestNotificationPermission() async {
+    try {
+      final res = await _channel.invokeMethod<bool>('requestNotificationPermission');
+      return res ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> openNotificationSettings() async {
+    try {
+      await _channel.invokeMethod<void>('openNotificationSettings');
+    } catch (_) {}
+  }
+
   static Future<void> openBatterySettings() async {
     try {
       await _channel.invokeMethod<void>('openBatterySettings');

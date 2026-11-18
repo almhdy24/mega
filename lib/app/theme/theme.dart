@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'colors.dart';
 
 class MegaTheme {
@@ -30,6 +31,14 @@ class MegaTheme {
         foregroundColor: MegaColors.textLight,
         elevation: 0,
         centerTitle: false,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.dark,
+          systemNavigationBarDividerColor: Colors.transparent,
+        ),
       ),
       cardTheme: CardThemeData(
         color: MegaColors.surfaceLight,
@@ -88,6 +97,14 @@ class MegaTheme {
         foregroundColor: MegaColors.textDark,
         elevation: 0,
         centerTitle: false,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarDividerColor: Colors.transparent,
+        ),
       ),
       cardTheme: CardThemeData(
         color: MegaColors.surfaceDark,

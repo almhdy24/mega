@@ -13,7 +13,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent?.action != Intent.ACTION_BOOT_COMPLETED) return
 
         val prefs = Prefs.get(context)
-        val monitorEnabled = prefs.getBoolean(Prefs.KEY_LIVE_MONITOR_ENABLED, false)
+        val monitorEnabled = prefs.getBoolean(Prefs.KEY_LIVE_MONITOR_ENABLED, true)
         val startOnBoot = prefs.getBoolean(Prefs.KEY_LIVE_MONITOR_START_BOOT, true)
 
         if (monitorEnabled && startOnBoot) {

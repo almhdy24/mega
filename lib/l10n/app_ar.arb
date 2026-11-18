@@ -122,5 +122,14 @@
   "liveNotificationTitle": "الإشعار الحي وعداد السرعة",
   "liveNotificationDesc": "عرض السرعة الحية في شريط الحالة وإشعار مستمر",
   "liveNotificationSettings": "إعدادات الإشعار الحي",
-  "liveNotificationBatteryHelp": "إذا اختفى الإشعار الحي"
+  "liveNotificationBatteryHelp": "إذا اختفى الإشعار الحي",
+  "onboardingPermissionsTitle": "الأذونات المطلوبة لتشغيل ميقا",
+  "onboardingPermissionsDesc": "يحتاج التطبيق إلى إذن إحصائيات البيانات وإذن الإشعارات ليعمل العداد الحي في شريط الحالة ويحسب استهلاك باقتك بدقة:",
+  "onboardingUsagePermTitle": "إذن إحصائيات الاستهلاك",
+  "onboardingUsagePermDesc": "لقراءة حجم الميجابايتات المستهلكة من باقتك محلياً عبر الشريحة والواي فاي.",
+  "onboardingNotifPermTitle": "إذن الإشعارات وشريط الحالة",
+  "onboardingNotifPermDesc": "لعرض عداد السرعة الحي في شريط الحالة وإرسال تنبيهات استهلاك الباقة.",
+  "onboardingPermGranted": "تم التفعيل",
+  "onboardingPermGrantAction": "تفعيل الإذن",
+  "onboardingAutoStartLiveNotice": "سيتم تشغيل عداد السرعة الحي في شريط الحالة تلقائياً."
 }

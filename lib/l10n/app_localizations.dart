@@ -649,6 +649,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'If Live Notification Disappears'**
   String get liveNotificationBatteryHelp;
+
+  /// No description provided for @onboardingPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Permissions for MEGA'**
+  String get onboardingPermissionsTitle;
+
+  /// No description provided for @onboardingPermissionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'MEGA requires usage statistics and notification access to display the real-time speed meter in your status bar and calculate bundle usage accurately:'**
+  String get onboardingPermissionsDesc;
+
+  /// No description provided for @onboardingUsagePermTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Usage Access'**
+  String get onboardingUsagePermTitle;
+
+  /// No description provided for @onboardingUsagePermDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To calculate local cellular and Wi-Fi bundle consumption directly from system kernel.'**
+  String get onboardingUsagePermDesc;
+
+  /// No description provided for @onboardingNotifPermTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications & Status Bar'**
+  String get onboardingNotifPermTitle;
+
+  /// No description provided for @onboardingNotifPermDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To display the real-time status bar speed icon and receive threshold alerts.'**
+  String get onboardingNotifPermDesc;
+
+  /// No description provided for @onboardingPermGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get onboardingPermGranted;
+
+  /// No description provided for @onboardingPermGrantAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Access'**
+  String get onboardingPermGrantAction;
+
+  /// No description provided for @onboardingAutoStartLiveNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Real-time status bar speed meter will be enabled automatically.'**
+  String get onboardingAutoStartLiveNotice;
 }
 
 class _AppLocalizationsDelegate

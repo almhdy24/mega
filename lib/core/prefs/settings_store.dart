@@ -42,6 +42,7 @@ class SettingsStore extends ChangeNotifier {
   static const String keyLiveMonitorScreenOff = 'live_monitor_screen_off';
   static const String keyLiveMonitorStartBoot = 'live_monitor_start_boot';
   static const String keyLiveMonitorFields = 'live_monitor_fields';
+  static const String keyHasSeenOnboarding = 'has_seen_onboarding';
 
   static const String defaultTestBaseUrl = 'https://fra.speedtest.clouvider.net/backend';
 
@@ -209,8 +210,14 @@ class SettingsStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get hasSeenOnboarding => _prefs.getBool(keyHasSeenOnboarding) ?? false;
+  set hasSeenOnboarding(bool val) {
+    _prefs.setBool(keyHasSeenOnboarding, val);
+    notifyListeners();
+  }
+
   // Live Monitor Getters / Setters
-  bool get liveMonitorEnabled => _prefs.getBool(keyLiveMonitorEnabled) ?? false;
+  bool get liveMonitorEnabled => _prefs.getBool(keyLiveMonitorEnabled) ?? true;
   set liveMonitorEnabled(bool value) {
     _prefs.setBool(keyLiveMonitorEnabled, value);
     notifyListeners();

@@ -313,4 +313,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get liveNotificationBatteryHelp => 'إذا اختفى الإشعار الحي';
+
+  @override
+  String get onboardingPermissionsTitle => 'الأذونات المطلوبة لتشغيل ميقا';
+
+  @override
+  String get onboardingPermissionsDesc =>
+      'يحتاج التطبيق إلى إذن إحصائيات البيانات وإذن الإشعارات ليعمل العداد الحي في شريط الحالة ويحسب استهلاك باقتك بدقة:';
+
+  @override
+  String get onboardingUsagePermTitle => 'إذن إحصائيات الاستهلاك';
+
+  @override
+  String get onboardingUsagePermDesc =>
+      'لقراءة حجم الميجابايتات المستهلكة من باقتك محلياً عبر الشريحة والواي فاي.';
+
+  @override
+  String get onboardingNotifPermTitle => 'إذن الإشعارات وشريط الحالة';
+
+  @override
+  String get onboardingNotifPermDesc =>
+      'لعرض عداد السرعة الحي في شريط الحالة وإرسال تنبيهات استهلاك الباقة.';
+
+  @override
+  String get onboardingPermGranted => 'تم التفعيل';
+
+  @override
+  String get onboardingPermGrantAction => 'تفعيل الإذن';
+
+  @override
+  String get onboardingAutoStartLiveNotice =>
+      'سيتم تشغيل عداد السرعة الحي في شريط الحالة تلقائياً.';
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../../core/platform/live_monitor_channel.dart';
 import '../../../core/platform/usage_channel.dart';
 import '../../../core/prefs/settings_store.dart';
 import '../../../core/time/bundle_period.dart';
@@ -30,6 +31,9 @@ class HomeViewModel extends ChangeNotifier {
 
   bool _hasAccess = true;
   bool get hasAccess => _hasAccess;
+
+  bool _hasNotificationAccess = true;
+  bool get hasNotificationAccess => _hasNotificationAccess;
 
   int _usedMobileBytes = 0;
   int get usedMobileBytes => _usedMobileBytes;
@@ -90,6 +94,15 @@ class HomeViewModel extends ChangeNotifier {
 
     try {
       _hasAccess = await usageRepository.usageSource.hasAccess();
+      _hasNotificationAccess = await LiveMonitorChannel.hasNotificationPermission();
+
+      // Auto enable live notification in status bar by default if permissions are available
+      if (settings.liveMonitorEnabled && _hasNotificationAccess) {
+        final isRunning = await LiveMonitorChannel.isRunning();
+        if (!isRunning) {
+          await LiveMonitorChannel.start();
+        }
+      }
 
       final now = DateTime.now();
 

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../core/prefs/settings_store.dart';
+import '../features/onboarding/presentation/onboarding_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/speedtest/presentation/speedtest_screen.dart';
@@ -14,6 +17,17 @@ class ShellScreen extends StatefulWidget {
 
 class _ShellScreenState extends State<ShellScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = context.read<SettingsStore>();
+      if (!settings.hasSeenOnboarding) {
+        OnboardingSheet.show(context);
+      }
+    });
+  }
 
   final List<Widget> _screens = const [
     HomeScreen(),
