@@ -195,7 +195,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsAboutDesc =>
-      'تطبيق مجاني مفتوح المصدر خفيف جداً لمراقبة الإنترنت والبيانات صُمم بعناية للسودان 🇸🇩';
+      'تطبيق مفتوح المصدر لمراقبة استهلاك البيانات وفحص سرعة الاتصال بدقة واستهلاك بيانات منخفض.';
 
   @override
   String get settingsLicense => 'ترخيص MIT · المهدي ديف';

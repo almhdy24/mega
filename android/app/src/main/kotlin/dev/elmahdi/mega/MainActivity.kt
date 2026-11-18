@@ -7,5 +7,6 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         UsagePlugin.registerWith(flutterEngine.dartExecutor.binaryMessenger, applicationContext)
+        LiveMonitorPlugin.registerWith(flutterEngine.dartExecutor.binaryMessenger, applicationContext)
     }
 }

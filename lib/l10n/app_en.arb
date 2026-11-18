@@ -74,7 +74,7 @@
   "settingsServer": "Test Server URL",
   "settingsUsagePermission": "Usage Stats Permission",
   "settingsAbout": "About MEGA",
-  "settingsAboutDesc": "Free, open-source, ultra-light internet monitor made with care for Sudan 🇸🇩",
+  "settingsAboutDesc": "Open-source data monitor and lightweight network speed test.",
   "settingsLicense": "MIT License · Elmahdi Dev",
   "commonMb": "MB",
   "commonGb": "GB",

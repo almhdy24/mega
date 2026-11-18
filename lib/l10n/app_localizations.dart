@@ -425,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAboutDesc.
   ///
   /// In en, this message translates to:
-  /// **'Free, open-source, ultra-light internet monitor made with care for Sudan 🇸🇩'**
+  /// **'Open-source data monitor and lightweight network speed test.'**
   String get settingsAboutDesc;
 
   /// No description provided for @settingsLicense.

@@ -1,6 +1,7 @@
 package dev.elmahdi.mega
 
 import android.app.AppOpsManager
+import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.content.Intent
@@ -73,6 +74,19 @@ class UsagePlugin(private val ctx: Context) : MethodChannel.MethodCallHandler {
                     try {
                         val r = UsageQuery.range(ctx, startMs, endMs)
                         main.post { result.success(r) }
+                    } catch (t: Throwable) {
+                        main.post { result.error("QUERY_FAILED", t.message, null) }
+                    }
+                }
+            }
+            "queryTopApps" -> {
+                val startMs = (call.argument<Number>("startMs"))?.toLong() ?: 0L
+                val endMs = (call.argument<Number>("endMs"))?.toLong() ?: 0L
+                val limit = (call.argument<Number>("limit"))?.toInt() ?: 10
+                io.execute {
+                    try {
+                        val list = UsageQuery.topApps(ctx, startMs, endMs, limit)
+                        main.post { result.success(list) }
                     } catch (t: Throwable) {
                         main.post { result.error("QUERY_FAILED", t.message, null) }
                     }
@@ -168,5 +182,64 @@ object UsageQuery {
             "wifiTx" to wTx,
             "mobileSupported" to mobileSupported
         )
+    }
+
+    fun topApps(ctx: Context, startMs: Long, endMs: Long, limit: Int = 10): List<Map<String, Any>> {
+        val nsm = ctx.getSystemService(Context.NETWORK_STATS_SERVICE) as? NetworkStatsManager ?: return emptyList()
+        if (Build.VERSION.SDK_INT < 28) return emptyList()
+
+        val uidMobile = mutableMapOf<Int, Long>()
+        val uidWifi = mutableMapOf<Int, Long>()
+
+        try {
+            val stats = nsm.querySummary(ConnectivityManager.TYPE_MOBILE, null, startMs, endMs)
+            val bucket = NetworkStats.Bucket()
+            while (stats.hasNextBucket()) {
+                stats.getNextBucket(bucket)
+                val uid = bucket.uid
+                if (uid > 0) {
+                    val bytes = bucket.rxBytes + bucket.txBytes
+                    uidMobile[uid] = (uidMobile[uid] ?: 0L) + bytes
+                }
+            }
+            stats.close()
+        } catch (_: Throwable) {}
+
+        try {
+            val stats = nsm.querySummary(ConnectivityManager.TYPE_WIFI, null, startMs, endMs)
+            val bucket = NetworkStats.Bucket()
+            while (stats.hasNextBucket()) {
+                stats.getNextBucket(bucket)
+                val uid = bucket.uid
+                if (uid > 0) {
+                    val bytes = bucket.rxBytes + bucket.txBytes
+                    uidWifi[uid] = (uidWifi[uid] ?: 0L) + bytes
+                }
+            }
+            stats.close()
+        } catch (_: Throwable) {}
+
+        val allUids = (uidMobile.keys + uidWifi.keys).toSet()
+        val sortedUids = allUids.sortedByDescending { (uidMobile[it] ?: 0L) + (uidWifi[it] ?: 0L) }.take(limit)
+
+        val pm = ctx.packageManager
+        return sortedUids.map { uid ->
+            val packages = try { pm.getPackagesForUid(uid) } catch (_: Throwable) { null }
+            val pkg = packages?.firstOrNull() ?: "UID $uid"
+            val label = try {
+                val appInfo = pm.getApplicationInfo(pkg, 0)
+                pm.getApplicationLabel(appInfo).toString()
+            } catch (_: Throwable) {
+                pkg
+            }
+            mapOf(
+                "uid" to uid,
+                "packageName" to pkg,
+                "appName" to label,
+                "mobileBytes" to (uidMobile[uid] ?: 0L),
+                "wifiBytes" to (uidWifi[uid] ?: 0L)
+            )
+        }
+    }
     }
 }

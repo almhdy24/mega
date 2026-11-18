@@ -191,7 +191,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAboutDesc =>
-      'Free, open-source, ultra-light internet monitor made with care for Sudan 🇸🇩';
+      'Open-source data monitor and lightweight network speed test.';
 
   @override
   String get settingsLicense => 'MIT License · Elmahdi Dev';

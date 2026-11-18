@@ -26,6 +26,13 @@ class MockUsageSource implements UsageSource {
   Future<String> networkType() async => 'wifi';
 
   @override
+  Future<List<AppUsageItem>> queryTopApps({
+    required DateTime startLocal,
+    required DateTime endLocal,
+    int limit = 10,
+  }) async => [];
+
+  @override
   Future<UsageResult> queryRange(DateTime startLocal, DateTime endLocal) async {
     final dayKey = DayRange.formatDay(startLocal);
     final totals = dayData[dayKey] ?? const UsageTotals.zero();

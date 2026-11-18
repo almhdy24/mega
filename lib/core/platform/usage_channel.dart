@@ -88,10 +88,33 @@ class UsageResult {
         totals = const UsageTotals.zero();
 }
 
+class AppUsageItem {
+  final int uid;
+  final String packageName;
+  final String appName;
+  final int mobileBytes;
+  final int wifiBytes;
+
+  const AppUsageItem({
+    required this.uid,
+    required this.packageName,
+    required this.appName,
+    required this.mobileBytes,
+    required this.wifiBytes,
+  });
+
+  int get totalBytes => mobileBytes + wifiBytes;
+}
+
 abstract class UsageSource {
   Future<bool> hasAccess();
   Future<void> openAccessSettings();
   Future<UsageResult> queryRange(DateTime startLocal, DateTime endLocal);
+  Future<List<AppUsageItem>> queryTopApps({
+    required DateTime startLocal,
+    required DateTime endLocal,
+    int limit = 10,
+  });
   Future<String> networkType();
   Future<void> scheduleAlertWorker();
   Future<void> cancelAlertWorker();
@@ -164,6 +187,39 @@ class PlatformUsageSource implements UsageSource {
       return UsageResult.error(e.message ?? e.code);
     } catch (e) {
       return UsageResult.error(e.toString());
+    }
+  }
+
+  @override
+  Future<List<AppUsageItem>> queryTopApps({
+    required DateTime startLocal,
+    required DateTime endLocal,
+    int limit = 10,
+  }) async {
+    try {
+      final access = await hasAccess();
+      if (!access) return [];
+
+      final list = await _channel.invokeListMethod<Map<dynamic, dynamic>>('queryTopApps', {
+        'startMs': startLocal.millisecondsSinceEpoch,
+        'endMs': endLocal.millisecondsSinceEpoch,
+        'limit': limit,
+      });
+
+      if (list == null) return [];
+
+      return list.map((item) {
+        final map = Map<String, dynamic>.from(item);
+        return AppUsageItem(
+          uid: (map['uid'] as num?)?.toInt() ?? 0,
+          packageName: map['packageName']?.toString() ?? '',
+          appName: map['appName']?.toString() ?? '',
+          mobileBytes: (map['mobileBytes'] as num?)?.toInt() ?? 0,
+          wifiBytes: (map['wifiBytes'] as num?)?.toInt() ?? 0,
+        );
+      }).toList();
+    } catch (_) {
+      return [];
     }
   }
 

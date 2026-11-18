@@ -72,6 +72,8 @@ class _UsageScreenState extends State<UsageScreen> with WidgetsBindingObserver {
             _buildPeriodSelector(context, l10n, isArabic, vm),
             const SizedBox(height: 20),
             _buildChartSection(context, l10n, isArabic, vm),
+            const SizedBox(height: 20),
+            _buildTopAppsSection(context, l10n, isArabic, vm),
           ],
         ),
       ),
@@ -401,6 +403,88 @@ class _UsageScreenState extends State<UsageScreen> with WidgetsBindingObserver {
             UsageBarChart(
               data: vm.chartData,
               isArabic: isArabic,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopAppsSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isArabic,
+    UsageViewModel vm,
+  ) {
+    final apps = vm.topApps;
+    if (apps.isEmpty) return const SizedBox.shrink();
+
+    final maxBytes = apps.first.mobileBytes > 0 ? apps.first.mobileBytes : 1;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.apps_outlined, color: MegaColors.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  isArabic ? 'أكثر التطبيقات استهلاكاً لبيانات الهاتف (اليوم)' : 'Top Apps by Mobile Data (Today)',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (ctx, i) {
+                final app = apps[i];
+                final ratio = (app.mobileBytes / maxBytes).clamp(0.05, 1.0);
+                final mobileStr = ByteFormatter.format(app.mobileBytes, isArabic: isArabic);
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            app.appName.isNotEmpty ? app.appName : app.packageName,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          mobileStr,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: MegaColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: LinearProgressIndicator(
+                        value: ratio,
+                        minHeight: 4,
+                        backgroundColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
+                        color: MegaColors.primary,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

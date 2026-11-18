@@ -183,7 +183,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
               ),
               child: Row(
                 children: [
-                  Text(selectedServer.flagEmoji, style: const TextStyle(fontSize: 16)),
+                  const Icon(Icons.dns_outlined, size: 16, color: MegaColors.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -263,7 +263,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                 if (progress.server != null && progress.phase == SpeedTestPhase.completed) ...[
                   const SizedBox(width: 8),
                   Text(
-                    '· ${progress.server!.flagEmoji} ${progress.server!.localizedName(isArabic)}',
+                    '· ${progress.server!.localizedName(isArabic)}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),

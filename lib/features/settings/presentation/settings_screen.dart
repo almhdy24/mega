@@ -7,6 +7,8 @@ import '../../home/presentation/home_view_model.dart';
 import '../../speedtest/presentation/server_selector_sheet.dart';
 import '../../usage/data/usage_repository.dart';
 import '../../usage/presentation/usage_view_model.dart';
+import 'about_screen.dart';
+import 'live_notification_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -152,6 +154,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.speed, color: MegaColors.primary),
+            title: Text(l10n.liveNotificationTitle),
+            subtitle: Text(settings.liveMonitorEnabled
+                ? (isArabic ? 'مُفعّل (يعمل في شريط الحالة)' : 'Enabled (Active in status bar)')
+                : (isArabic ? 'متوقف' : 'Disabled')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LiveNotificationSettingsScreen()),
+              );
+            },
+          ),
           const Divider(),
 
           // Section: Preferences
@@ -173,7 +189,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.dns_outlined, color: MegaColors.primary),
             title: Text(l10n.speedServer),
             subtitle: Text(
-              '${settings.selectedServer.flagEmoji} ${settings.selectedServer.localizedName(isArabic)}',
+              settings.selectedServer.localizedName(isArabic),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -200,53 +216,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
 
           // Section: About
-          Padding(
-            padding: const EdgeInsetsDirectional.all(16),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsetsDirectional.all(6),
-                          decoration: BoxDecoration(
-                            color: MegaColors.primaryContainerLight,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.info_outline, color: MegaColors.primary, size: 20),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          l10n.settingsAbout,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      l10n.settingsAboutDesc,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.settingsLicense,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          ListTile(
+            leading: const Icon(Icons.info_outline, color: MegaColors.primary),
+            title: Text(l10n.settingsAbout),
+            subtitle: Text(
+              l10n.settingsAboutDesc,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutScreen()),
+              );
+            },
           ),
         ],
       ),

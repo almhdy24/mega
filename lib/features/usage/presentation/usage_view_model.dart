@@ -42,6 +42,9 @@ class UsageViewModel extends ChangeNotifier {
   List<DailyUsage> _chartData = [];
   List<DailyUsage> get chartData => _chartData;
 
+  List<AppUsageItem> _topApps = [];
+  List<AppUsageItem> get topApps => _topApps;
+
   Future<void> init() async {
     await refresh();
   }
@@ -112,6 +115,17 @@ class UsageViewModel extends ChangeNotifier {
 
       // 30 days chart
       _chartData = await repository.getLast30Days(referenceNow: now);
+
+      // Top Apps
+      try {
+        _topApps = await repository.usageSource.queryTopApps(
+          startLocal: todayStart,
+          endLocal: todayEnd,
+          limit: 10,
+        );
+      } catch (_) {
+        _topApps = [];
+      }
     } catch (e) {
       _status = UsageResultStatus.error;
       _errorMessage = e.toString();

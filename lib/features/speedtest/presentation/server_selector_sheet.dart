@@ -34,17 +34,20 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
 
   Future<void> _showCustomUrlDialog(BuildContext context, SpeedTestViewModel vm) async {
     _customUrlController.text = vm.settings.testCustomUrl;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final url = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('خادم مخصص / Custom Server'),
+        title: Text(isArabic ? 'خادم مخصص' : 'Custom Server'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'أدخل رابط خادم فحص السرعة (LibreSpeed أو MEGA backend):',
-              style: TextStyle(fontSize: 13),
+            Text(
+              isArabic
+                  ? 'أدخل رابط خادم فحص السرعة:'
+                  : 'Enter speed test server URL:',
+              style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -60,12 +63,12 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء / Cancel'),
+            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, _customUrlController.text.trim()),
             style: FilledButton.styleFrom(backgroundColor: MegaColors.primary),
-            child: const Text('حفظ / Save'),
+            child: Text(isArabic ? 'حفظ' : 'Save'),
           ),
         ],
       ),
@@ -95,7 +98,6 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Center(
             child: Container(
               width: 40,
@@ -108,14 +110,13 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Header
           Row(
             children: [
               const Icon(Icons.dns_outlined, color: MegaColors.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isArabic ? 'اختيار خادم الفحص' : 'Select Speed Test Server',
+                  isArabic ? 'خوادم الفحص' : 'Speed Test Servers',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -130,7 +131,7 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
                   onPressed: () => vm.probeAllServers(),
                   icon: const Icon(Icons.refresh, size: 16),
                   label: Text(
-                    isArabic ? 'قياس الاستجابة' : 'Ping All',
+                    isArabic ? 'فحص الاستجابة' : 'Ping All',
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),
@@ -145,12 +146,12 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
             child: ListView(
               shrinkWrap: true,
               children: [
-                // 1. Auto option
                 _buildServerCard(
                   server: SpeedServers.auto,
                   isSelected: selected.id == 'auto',
                   isArabic: isArabic,
                   latency: null,
+                  icon: Icons.bolt_outlined,
                   onTap: () {
                     vm.selectServer(SpeedServers.auto);
                     Navigator.pop(context);
@@ -158,14 +159,17 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
                 ),
                 const Divider(height: 16),
 
-                // 2. Verified servers
                 ...SpeedServers.candidatesForAuto.map((s) {
                   final latency = latencies[s.id];
+                  final icon = s.id == 'mega-sd'
+                      ? Icons.star_border
+                      : (s.id == 'cloudflare' ? Icons.public : Icons.dns_outlined);
                   return _buildServerCard(
                     server: s,
                     isSelected: selected.id == s.id,
                     isArabic: isArabic,
                     latency: latency,
+                    icon: icon,
                     onTap: () {
                       vm.selectServer(s);
                       Navigator.pop(context);
@@ -175,12 +179,11 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
 
                 const Divider(height: 16),
 
-                // 3. Custom Server option
                 ListTile(
                   contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 4),
                   leading: const CircleAvatar(
                     backgroundColor: MegaColors.primaryContainerLight,
-                    child: Text('⚙️', style: TextStyle(fontSize: 18)),
+                    child: Icon(Icons.tune_outlined, color: MegaColors.primary, size: 20),
                   ),
                   title: Text(
                     isArabic ? 'خادم مخصص' : 'Custom Server',
@@ -189,7 +192,7 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
                   subtitle: Text(
                     selected.id == 'custom' && selected.baseUrl.isNotEmpty
                         ? selected.baseUrl
-                        : (isArabic ? 'أدخل رابط خادم خاص بك' : 'Enter a custom speed test URL'),
+                        : (isArabic ? 'إدخال رابط خادم فحص يدوي' : 'Enter a custom server URL'),
                     style: const TextStyle(fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -213,6 +216,7 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
     required bool isSelected,
     required bool isArabic,
     required double? latency,
+    required IconData icon,
     required VoidCallback onTap,
   }) {
     String? latencyText;
@@ -241,8 +245,8 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
           ? MegaColors.primaryContainerLight.withValues(alpha: 0.3)
           : null,
       leading: CircleAvatar(
-        backgroundColor: Colors.transparent,
-        child: Text(server.flagEmoji, style: const TextStyle(fontSize: 22)),
+        backgroundColor: MegaColors.primaryContainerLight.withValues(alpha: 0.6),
+        child: Icon(icon, color: MegaColors.primary, size: 20),
       ),
       title: Text(
         server.localizedName(isArabic),
@@ -254,8 +258,8 @@ class _ServerSelectorSheetState extends State<ServerSelectorSheet> {
       subtitle: server.id == 'auto'
           ? Text(
               isArabic
-                  ? 'يختار الخادم الأقل زمناً تلقائياً قبل كل فحص'
-                  : 'Automatically selects fastest server before test',
+                  ? 'اختيار الخادم الأسرع استجابة تلقائياً'
+                  : 'Automatically select fastest server',
               style: const TextStyle(fontSize: 11),
             )
           : Text(

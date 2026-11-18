@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import org.json.JSONArray
+import org.json.JSONObject
 import java.util.Calendar
 
 class UsageWorker(
@@ -14,126 +15,168 @@ class UsageWorker(
     override suspend fun doWork(): Result {
         val ctx = applicationContext
 
-        // 1. Check usage permission
+        // 1. Check usage access
         if (!UsageQuery.hasAccess(ctx)) {
             return Result.success()
         }
 
-        // 2. Read Flutter shared preferences
-        val prefs = ctx.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
-        val alertsEnabled = prefs.getBoolean("flutter.alerts_enabled", true)
+        // 2. Read preferences
+        val prefs = Prefs.get(ctx)
+        val alertsEnabled = prefs.getBoolean(Prefs.KEY_ALERTS_ENABLED, true)
         if (!alertsEnabled) {
             return Result.success()
         }
 
-        val bundleBytes = prefs.getLong("flutter.bundle_bytes", 0L)
-        if (bundleBytes <= 0L) {
-            return Result.success()
-        }
+        val bundleBytes = Prefs.getLong(prefs, Prefs.KEY_BUNDLE_BYTES, 0L)
+        val bundleStartMs = Prefs.getLong(prefs, Prefs.KEY_BUNDLE_START_MS, 0L)
+        val validityDays = Prefs.getInt(prefs, Prefs.KEY_BUNDLE_VALIDITY_DAYS, 30)
+        val autoRenew = prefs.getBoolean(Prefs.KEY_BUNDLE_AUTO_RENEW, true)
+        val bundleId = Prefs.getLong(prefs, Prefs.KEY_BUNDLE_ID, 1L)
 
-        val cycleStartDay = prefs.getInt("flutter.cycle_start_day", 1)
-
-        // 3. Compute current billing cycle start epoch
         val now = Calendar.getInstance()
-        val cycleStart = getCycleStart(now, cycleStartDay)
-        val cycleStartMs = cycleStart.timeInMillis
         val nowMs = now.timeInMillis
+        val currentHour = now.get(Calendar.HOUR_OF_DAY)
 
-        // 4. Query current mobile usage from cycle start to now
-        val usageMap = UsageQuery.range(ctx, cycleStartMs, nowMs)
-        val mobileSupported = (usageMap["mobileSupported"] as? Boolean) ?: true
-        if (!mobileSupported) {
-            return Result.success()
-        }
-
-        val mobileRx = (usageMap["mobileRx"] as? Number)?.toLong() ?: 0L
-        val mobileTx = (usageMap["mobileTx"] as? Number)?.toLong() ?: 0L
-        val mobileUsedBytes = mobileRx + mobileTx
-
-        // Check if cycle rolled over
-        val savedCycleStart = prefs.getLong("flutter.notified_cycle_start", 0L)
-        val notifiedSet = mutableSetOf<Int>()
-
-        if (savedCycleStart != cycleStartMs) {
-            // New cycle started: clear notified thresholds
-            prefs.edit()
-                .putLong("flutter.notified_cycle_start", cycleStartMs)
-                .putString("flutter.notified_thresholds", "[]")
-                .apply()
+        // 3. Compute bundle period
+        val bundleInfo = if (bundleBytes > 0 && bundleStartMs > 0) {
+            val period = BundlePeriod.compute(bundleStartMs, validityDays, autoRenew, nowMs)
+            BundleEvalInfo(
+                id = bundleId,
+                totalBytes = bundleBytes,
+                startMs = period.startMs,
+                endMs = period.endMs,
+                validityDays = validityDays
+            )
         } else {
-            val notifiedRaw = prefs.getString("flutter.notified_thresholds", "[]") ?: "[]"
-            try {
-                val jsonArr = JSONArray(notifiedRaw)
-                for (i in 0 until jsonArr.length()) {
-                    notifiedSet.add(jsonArr.getInt(i))
-                }
-            } catch (_: Exception) {}
+            null
         }
 
-        // Parse alert thresholds (default 50, 80, 100)
-        val thresholds = mutableListOf(50, 80, 100)
-        val thresholdsRaw = prefs.getString("flutter.alert_thresholds", null)
-        if (!thresholdsRaw.isNullOrEmpty()) {
-            try {
-                thresholds.clear()
-                val jsonArr = JSONArray(thresholdsRaw)
-                for (i in 0 until jsonArr.length()) {
-                    thresholds.add(jsonArr.getInt(i))
-                }
-            } catch (_: Exception) {
-                thresholds.addAll(listOf(50, 80, 100))
-            }
+        // 4. Query usage
+        val startOfDay = Calendar.getInstance().apply {
+            timeInMillis = nowMs
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        val dailyRange = UsageQuery.range(ctx, startOfDay, nowMs)
+        val todayMobile = ((dailyRange["mobileRx"] as? Number)?.toLong() ?: 0L) +
+                ((dailyRange["mobileTx"] as? Number)?.toLong() ?: 0L)
+
+        val periodMobile = if (bundleInfo != null) {
+            val periodRange = UsageQuery.range(ctx, bundleInfo.startMs, nowMs)
+            ((periodRange["mobileRx"] as? Number)?.toLong() ?: 0L) +
+                    ((periodRange["mobileTx"] as? Number)?.toLong() ?: 0L)
+        } else {
+            0L
         }
-        thresholds.sort()
 
-        // 5. Evaluate newly crossed thresholds
-        val pct = (mobileUsedBytes.toDouble() * 100.0) / bundleBytes.toDouble()
-        val newlyCrossed = thresholds.filter { t -> pct >= t && !notifiedSet.contains(t) }
+        // Last hour usage
+        val oneHourAgo = nowMs - (3600 * 1000L)
+        val lastHourRange = UsageQuery.range(ctx, oneHourAgo, nowMs)
+        val lastHourMobile = ((lastHourRange["mobileRx"] as? Number)?.toLong() ?: 0L) +
+                ((lastHourRange["mobileTx"] as? Number)?.toLong() ?: 0L)
 
-        if (newlyCrossed.isNotEmpty()) {
-            val usedMb = mobileUsedBytes / (1024 * 1024)
-            val totalMb = bundleBytes / (1024 * 1024)
+        val snapshot = UsageSnapshotData(
+            todayMobileBytes = todayMobile,
+            periodMobileBytes = periodMobile,
+            lastHourBytes = lastHourMobile
+        )
 
-            for (t in newlyCrossed) {
-                NotificationHelper.showThresholdAlert(ctx, t, usedMb, totalMb)
-                notifiedSet.add(t)
-            }
+        // 5. Parse rules
+        val rules = parseAlertRules(prefs.getString(Prefs.KEY_ALERT_RULES, null))
 
-            // Persist updated notified thresholds
-            val jsonArr = JSONArray()
-            notifiedSet.sorted().forEach { jsonArr.put(it) }
-            prefs.edit()
-                .putString("flutter.notified_thresholds", jsonArr.toString())
-                .apply()
+        // 6. Read saved fired state
+        val savedFiredState = parseAlertState(prefs)
+
+        // 7. Evaluate
+        val (alertsToFire, newState) = AlertEvaluator.evaluate(
+            snapshot = snapshot,
+            bundle = bundleInfo,
+            rules = rules,
+            nowMs = nowMs,
+            state = savedFiredState,
+            currentHour = currentHour,
+            quietStartHour = 22,
+            quietEndHour = 7
+        )
+
+        // 8. Fire notifications
+        for (alert in alertsToFire) {
+            NotificationHelper.showAlert(ctx, alert)
         }
+
+        // 9. Persist updated fired state
+        saveAlertState(prefs, newState)
 
         return Result.success()
     }
 
-    private fun getCycleStart(now: Calendar, startDay: Int): Calendar {
-        fun anchor(year: Int, month: Int): Calendar {
-            val cal = Calendar.getInstance().apply {
-                clear()
-                set(Calendar.YEAR, year)
-                set(Calendar.MONTH, month)
-                val maxDay = getActualMaximum(Calendar.DAY_OF_MONTH)
-                set(Calendar.DAY_OF_MONTH, startDay.coerceIn(1, maxDay))
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            return cal
+    private fun parseAlertRules(raw: String?): List<AlertRule> {
+        if (raw.isNullOrEmpty()) {
+            return listOf(
+                AlertRule(id = "pct_50", type = "bundle_percent", threshold = 50),
+                AlertRule(id = "pct_80", type = "bundle_percent", threshold = 80),
+                AlertRule(id = "pct_100", type = "bundle_percent", threshold = 100, channel = "urgent"),
+                AlertRule(id = "rem_500mb", type = "bundle_remaining", threshold = 500L * 1024L * 1024L),
+                AlertRule(id = "pace", type = "pace_warning"),
+                AlertRule(id = "exp_24h", type = "expiry_reminder", threshold = 24),
+                AlertRule(id = "exhausted", type = "bundle_exhausted", channel = "urgent")
+            )
         }
+        return try {
+            val list = mutableListOf<AlertRule>()
+            val arr = JSONArray(raw)
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                list.add(
+                    AlertRule(
+                        id = obj.optString("id", "rule_$i"),
+                        type = obj.optString("type", "bundle_percent"),
+                        enabled = obj.optBoolean("enabled", true),
+                        threshold = obj.optLong("threshold", 0L),
+                        channel = obj.optString("channel", "alerts"),
+                        target = obj.optString("target", "mobile")
+                    )
+                )
+            }
+            list
+        } catch (_: Exception) {
+            listOf(
+                AlertRule(id = "pct_50", type = "bundle_percent", threshold = 50),
+                AlertRule(id = "pct_80", type = "bundle_percent", threshold = 80),
+                AlertRule(id = "pct_100", type = "bundle_percent", threshold = 100, channel = "urgent")
+            )
+        }
+    }
 
-        var start = anchor(now.get(Calendar.YEAR), now.get(Calendar.MONTH))
-        if (start.after(now)) {
-            val prevMonthCal = Calendar.getInstance().apply {
-                timeInMillis = now.timeInMillis
-                add(Calendar.MONTH, -1)
+    private fun parseAlertState(prefs: android.content.SharedPreferences): AlertState {
+        val bundleId = Prefs.getLong(prefs, "flutter.notified_bundle_id", 0L)
+        val rawFired = prefs.getString("flutter.notified_fired_rule_ids", "[]") ?: "[]"
+        val firedSet = mutableSetOf<String>()
+        try {
+            val arr = JSONArray(rawFired)
+            for (i in 0 until arr.length()) {
+                firedSet.add(arr.getString(i))
             }
-            start = anchor(prevMonthCal.get(Calendar.YEAR), prevMonthCal.get(Calendar.MONTH))
-        }
-        return start
+        } catch (_: Exception) {}
+
+        val lastExh = Prefs.getLong(prefs, "flutter.last_exhausted_remind_ms", 0L)
+        return AlertState(
+            bundleId = bundleId,
+            firedRuleIds = firedSet,
+            lastExhaustedRemindMs = lastExh
+        )
+    }
+
+    private fun saveAlertState(prefs: android.content.SharedPreferences, state: AlertState) {
+        val arr = JSONArray()
+        state.firedRuleIds.forEach { arr.put(it) }
+        prefs.edit()
+            .putLong("flutter.notified_bundle_id", state.bundleId)
+            .putString("flutter.notified_fired_rule_ids", arr.toString())
+            .putLong("flutter.last_exhausted_remind_ms", state.lastExhaustedRemindMs)
+            .apply()
     }
 }
