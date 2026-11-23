@@ -10,6 +10,7 @@
 | Full Description (EN) | `full-description-en.txt` | 3,057 | 4,000 | PASS |
 | Release Notes (AR) | `release-notes-ar.txt` | 424 | 500 | PASS |
 | Release Notes (EN) | `release-notes-en.txt` | 450 | 500 | PASS |
+| App Icon (Play Store) | `icon-playstore-512.png` | 512x512 (14 KB) | 512x512 (< 1 MB) | PASS |
 
 ---
 
