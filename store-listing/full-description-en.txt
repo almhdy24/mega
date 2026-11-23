@@ -1,0 +1,47 @@
+Ever wondered why your mobile data bundle drains faster than expected?
+MEGA is your lightweight, offline-first mobile bandwidth monitor and live status bar speed meter for Android. It provides full transparency over cellular consumption, remaining bundle allowances, and daily safe consumption rates—without ads, trackers, or remote servers.
+
+Engineered with privacy and efficiency at its core, MEGA queries local Android system statistics directly, storing all history strictly on your device inside an isolated SQLite database.
+
+Key Features:
+
+1. Live Status Bar Speed Meter & Ongoing Notification
+- Dynamic status bar icon displaying download and upload throughput in real time.
+- Persistent notification showing today's mobile and Wi-Fi usage, remaining bundle data, and days left.
+- Battery-aware architecture: speed polling pauses automatically when your screen turns off to prevent idle battery drain.
+
+2. Comprehensive Bundle Management
+- Flexible validity cycles: Daily, Weekly (7 days), Monthly (30 days), or custom day intervals.
+- Accurate remaining allowance tracking in megabytes and gigabytes.
+- Automatic cycle rollover and safe bundle archiving when a period concludes.
+
+3. Safe Daily Allowance & Over-Pace Warnings
+- Dynamic calculation of recommended daily bandwidth based on remaining days.
+- Over-pace warning indicators alert you when today's consumption rate threatens to exhaust your bundle prematurely.
+
+4. Clear Separation Between Cellular & Wi-Fi
+- Cellular data is tracked independently so your mobile carrier allowance is never skewed by home or office Wi-Fi networks.
+- Optional filter to monitor cellular throughput only in the live status bar meter.
+
+5. Visual Usage Analytics (7 & 30 Days)
+- Responsive stacked bar charts visualizing daily mobile and Wi-Fi data across 7-day or 30-day windows.
+- Fast, low-overhead rendering optimized for all screen sizes and orientations.
+
+6. Threshold Alerts
+- Timely notifications at 50%, 80%, and 100% of your configured bundle limit to help prevent unexpected out-of-bundle carrier charges.
+
+7. 100% Privacy & Offline-First Design
+- Zero Advertisements: Clean, distraction-free interface.
+- Zero Accounts: No login, registration, phone number, or email required.
+- Zero Remote Telemetry: No background server uploads, analytics SDKs, or third-party trackers.
+- Open Source: Fully transparent codebase released under the MIT License, lightweight package (~8.4 MB).
+
+Required Permissions & Transparency:
+- Usage Access (PACKAGE_USAGE_STATS): Required by Android to read local device network byte counters without sniffing packet traffic.
+- Notifications (POST_NOTIFICATIONS): Required to display the real-time status bar speed icon and deliver bundle threshold alerts.
+- Foreground Service (FOREGROUND_SERVICE): Keeps the live status bar monitor running smoothly without being killed by background memory managers.
+
+Take control of your mobile plan with MEGA.
+Developed by: Elmahdi Abdalla (Elmahdi Dev)
+Official Website: https://almhdy24.com/products/mega
+Support: support@almhdy24.com

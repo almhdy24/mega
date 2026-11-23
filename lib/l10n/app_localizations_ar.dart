@@ -13,7 +13,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appName => 'ميقا';
 
   @override
-  String get appTagline => 'ميقابايتك محسوبة';
+  String get appTagline => 'متابعة دقيقة لاستهلاك باقة الإنترنت';
 
   @override
   String get navHome => 'الرئيسية';
@@ -55,7 +55,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeSetBundle =>
-      'اضبط حجم باقتك وتاريخ تجديدها في الإعدادات لمتابعة المتبقي';
+      'اضبط سعة باقتك وتاريخ بدئها لمتابعة الرصيد المتبقي';
 
   @override
   String get usageToday => 'اليوم';
@@ -67,11 +67,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get usageMonth => 'هذا الشهر';
 
   @override
-  String get usageMobile => 'بيانات الهاتف';
+  String get usageMobile => 'بيانات الجوال';
 
   @override
   String get usageMobileUnsupported =>
-      'استهلاك الهاتف غير مدعوم في إصدار أندرويد هذا (يتطلب أندرويد 10 فأعلى)';
+      'قراءة استهلاك بيانات الجوال تتطلب أندرويد 10 فأعلى';
 
   @override
   String get usageWifi => 'واي فاي';
@@ -83,26 +83,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get usageHistory30Days => 'استهلاك آخر 30 يوماً';
 
   @override
-  String get usageAccessRequired => 'إذن الوصول للاستهلاك مطلوب';
+  String get usageAccessRequired => 'إذن إحصائيات الاستخدام مطلوب';
 
   @override
   String get usagePermissionRationale =>
-      'نحتاج إذن الوصول لإحصائيات الاستخدام لقراءة استهلاك الإنترنت. لا يتم إرسال أي بيانات خارج جهازك.';
+      'يحتاج ميقا إذن إحصائيات الاستخدام لقراءة استهلاك باقتك محلياً من النظام. لا تغادر أي بيانات هاتفك.';
 
   @override
   String get usageOpenSettings => 'فتح الإعدادات';
 
   @override
-  String get usagePermissionGranted => 'تم منح الإذن';
+  String get usagePermissionGranted => 'تم التفعيل';
 
   @override
-  String get usagePermissionMissing => 'مطلوب تفعيل الإذن';
+  String get usagePermissionMissing => 'يحتاج تفعيل';
 
   @override
-  String get settingsBundleSize => 'حجم الباقة (جيجابايت)';
+  String get settingsBundleSize => 'سعة الباقة';
 
   @override
-  String get settingsCycleStart => 'يوم بداية الدورة';
+  String get settingsCycleStart => 'يوم بداية الباقة';
 
   @override
   String settingsCycleDay(int day) {
@@ -114,7 +114,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsAlertsDescription =>
-      'إشعار عند الوصول لـ 50% و80% و100% من الباقة';
+      'تنبيه عند بلوغ 50% و80% و100% من سعة الباقة';
 
   @override
   String get settingsTheme => 'المظهر';
@@ -139,10 +139,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsAboutDesc =>
-      'تطبيق مفتوح المصدر لمراقبة استهلاك باقات البيانات مع عداد حي في شريط الحالة.';
+      'تطبيق محلي لمراقبة استهلاك باقات الجوال مع عداد سرعة حي في شريط الحالة.';
 
   @override
-  String get settingsLicense => 'ترخيص MIT · المهدي ديف';
+  String get settingsLicense => 'ترخيص MIT · تطوير Elmahdi Dev';
 
   @override
   String get commonMb => 'ميجابايت';
@@ -170,7 +170,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String homeSafeDailyAllowance(String amount) {
-    return 'تقدر تستهلك اليوم $amount';
+    return 'المعدل اليومي المقترح: $amount';
   }
 
   @override
@@ -206,11 +206,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bundleAutoRenewLabel => 'تجديد تلقائي عند انتهاء المدة';
 
   @override
-  String get onboardingWhyTitle => 'لماذا يحتاج ميقا هذا الإذن؟';
+  String get onboardingWhyTitle => 'متابعة دقيقة لباقة هاتفك';
 
   @override
   String get onboardingWhyDesc =>
-      'ميقا يقرأ استهلاك بياناتك بدقة من إحصائيات النظام مباشرة. بدون إعلانات، بدون تسجيل، بدون خوادم تتبع، ويعمل بالكامل على جهازك.';
+      'يعرض ميقا استهلاك بيانات الجوال المتبقي من باقتك ومعدل الصرف اليومي. تطبيق محلي خفيف، بدون إعلانات، وبدون أي اتصال خارجي.';
 
   @override
   String get onboardingGrantButton => 'منح إذن الوصول للاستهلاك';
@@ -229,7 +229,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get liveNotificationDesc =>
-      'عرض السرعة الحية في شريط الحالة وإشعار مستمر';
+      'عرض سرعة التحميل والرفع في شريط الحالة وإشعار مستمر';
 
   @override
   String get liveNotificationSettings => 'إعدادات الإشعار الحي';
@@ -238,33 +238,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveNotificationBatteryHelp => 'إذا اختفى الإشعار الحي';
 
   @override
-  String get onboardingPermissionsTitle => 'الأذونات المطلوبة لتشغيل ميقا';
+  String get onboardingPermissionsTitle => 'أذونات تشغيل ميقا';
 
   @override
   String get onboardingPermissionsDesc =>
-      'يحتاج التطبيق إلى إذن إحصائيات البيانات وإذن الإشعارات ليعمل العداد الحي في شريط الحالة ويحسب استهلاك باقتك بدقة:';
+      'يعتمد ميقا على قراءة إحصائيات النظام مباشرة دون الحاجة لأي خوادم خارجية:';
 
   @override
-  String get onboardingUsagePermTitle => 'إذن إحصائيات الاستهلاك';
+  String get onboardingUsagePermTitle => 'إذن إحصائيات الاستخدام (أساسي)';
 
   @override
   String get onboardingUsagePermDesc =>
-      'لقراءة حجم الميجابايتات المستهلكة من باقتك محلياً عبر الشريحة والواي فاي.';
+      'لقراءة استهلاك بيانات الجوال والواي فاي بدقة من نظام أندرويد.';
 
   @override
-  String get onboardingNotifPermTitle => 'إذن الإشعارات وشريط الحالة';
+  String get onboardingNotifPermTitle => 'إذن الإشعارات (اختياري)';
 
   @override
   String get onboardingNotifPermDesc =>
-      'لعرض عداد السرعة الحي في شريط الحالة وإرسال تنبيهات استهلاك الباقة.';
+      'لعرض عداد السرعة في شريط الحالة وتنبيهك قبل نفاد باقتك.';
 
   @override
-  String get onboardingPermGranted => 'تم التفعيل';
+  String get onboardingPermGranted => 'مفعّل';
 
   @override
   String get onboardingPermGrantAction => 'تفعيل الإذن';
 
   @override
   String get onboardingAutoStartLiveNotice =>
-      'سيتم تشغيل عداد السرعة الحي في شريط الحالة تلقائياً.';
+      'يمكنك التحكم في تشغيل عداد السرعة وتخصيصه دائماً من الإعدادات.';
 }

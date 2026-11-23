@@ -175,7 +175,7 @@ class LiveNotificationSettingsScreen extends StatelessWidget {
                   // Mobile Only
                   SwitchListTile(
                     secondary: const Icon(Icons.signal_cellular_alt, color: MegaColors.primary),
-                    title: Text(isArabic ? 'حساب بيانات الهاتف فقط' : 'Count Mobile Data Only'),
+                    title: Text(isArabic ? 'حساب بيانات الجوال فقط' : 'Count Mobile Data Only'),
                     subtitle: Text(
                       isArabic
                           ? 'استثناء سرعة الواي فاي وحساب باقة الشريحة فقط'

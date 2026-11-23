@@ -326,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isArabic ? 'هاتف' : 'mobile',
+                  isArabic ? 'بيانات الجوال' : 'mobile',
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   const SizedBox(height: 2),
                   Text(
                     isArabic
-                        ? 'اضبط حجم باقتك لمتابعة الرصيد المتبقي'
+                        ? 'اضبط سعة باقتك لمتابعة الرصيد المتبقي'
                         : 'Set your bundle to track remaining data',
                     style: TextStyle(
                       fontSize: 11,
@@ -644,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             // Summary of period
             Text(
               isArabic
-                  ? 'إجمالي الفترة: $mobileTotalStr هاتف · $wifiTotalStr واي فاي'
+                  ? 'إجمالي الفترة: $mobileTotalStr بيانات جوال · $wifiTotalStr واي فاي'
                   : 'Period total: $mobileTotalStr Mobile · $wifiTotalStr Wi-Fi',
               style: TextStyle(
                 fontSize: 11,

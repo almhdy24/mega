@@ -317,13 +317,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAboutDesc.
   ///
   /// In en, this message translates to:
-  /// **'Open-source mobile data monitor with live status bar meter.'**
+  /// **'Offline mobile data monitor with live status bar speed meter.'**
   String get settingsAboutDesc;
 
   /// No description provided for @settingsLicense.
   ///
   /// In en, this message translates to:
-  /// **'MIT License · Elmahdi Dev'**
+  /// **'MIT License · Developed by Elmahdi Dev'**
   String get settingsLicense;
 
   /// No description provided for @commonMb.
@@ -443,13 +443,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWhyTitle.
   ///
   /// In en, this message translates to:
-  /// **'Why does MEGA need this access?'**
+  /// **'Accurate Mobile Data Tracking'**
   String get onboardingWhyTitle;
 
   /// No description provided for @onboardingWhyDesc.
   ///
   /// In en, this message translates to:
-  /// **'MEGA reads your data consumption directly from system stats. Ad-free, login-free, tracker-free, and 100% offline-first on your device.'**
+  /// **'MEGA tracks your remaining mobile data and daily safe pace. Lightweight, ad-free, and works completely offline on your device.'**
   String get onboardingWhyDesc;
 
   /// No description provided for @onboardingGrantButton.
@@ -503,55 +503,55 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingPermissionsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Required Permissions for MEGA'**
+  /// **'App Permissions'**
   String get onboardingPermissionsTitle;
 
   /// No description provided for @onboardingPermissionsDesc.
   ///
   /// In en, this message translates to:
-  /// **'MEGA requires usage statistics and notification access to display the real-time speed meter in your status bar and calculate bundle usage accurately:'**
+  /// **'MEGA reads device system statistics locally without connecting to external servers:'**
   String get onboardingPermissionsDesc;
 
   /// No description provided for @onboardingUsagePermTitle.
   ///
   /// In en, this message translates to:
-  /// **'Data Usage Access'**
+  /// **'Usage Access (Required)'**
   String get onboardingUsagePermTitle;
 
   /// No description provided for @onboardingUsagePermDesc.
   ///
   /// In en, this message translates to:
-  /// **'To calculate local cellular and Wi-Fi bundle consumption directly from system kernel.'**
+  /// **'To accurately track mobile data and Wi-Fi usage directly from Android.'**
   String get onboardingUsagePermDesc;
 
   /// No description provided for @onboardingNotifPermTitle.
   ///
   /// In en, this message translates to:
-  /// **'Notifications & Status Bar'**
+  /// **'Notifications (Optional)'**
   String get onboardingNotifPermTitle;
 
   /// No description provided for @onboardingNotifPermDesc.
   ///
   /// In en, this message translates to:
-  /// **'To display the real-time status bar speed icon and receive threshold alerts.'**
+  /// **'To show the status bar speed meter and warn you before your bundle runs out.'**
   String get onboardingNotifPermDesc;
 
   /// No description provided for @onboardingPermGranted.
   ///
   /// In en, this message translates to:
-  /// **'Enabled'**
+  /// **'Active'**
   String get onboardingPermGranted;
 
   /// No description provided for @onboardingPermGrantAction.
   ///
   /// In en, this message translates to:
-  /// **'Enable Access'**
+  /// **'Enable'**
   String get onboardingPermGrantAction;
 
   /// No description provided for @onboardingAutoStartLiveNotice.
   ///
   /// In en, this message translates to:
-  /// **'Real-time status bar speed meter will be enabled automatically.'**
+  /// **'You can customize or disable the status bar speed meter anytime in Settings.'**
   String get onboardingAutoStartLiveNotice;
 }
 

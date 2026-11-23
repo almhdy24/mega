@@ -1,0 +1,6 @@
+What's new in version 1.1.1:
+- Refined UI layout with improved 360dp viewport responsiveness and native RTL alignment.
+- Enhanced bundle archival integrity and multi-cycle rollover after extended offline periods.
+- Instant stop behavior for the live status bar speed meter when toggled off.
+- Clarified phrasing across bundle setup, allowances, and permission dialogs.
+- Optimized app size (~8.4 MB) and battery efficiency with zero ads or tracking.

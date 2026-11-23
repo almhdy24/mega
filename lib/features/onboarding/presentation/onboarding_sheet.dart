@@ -156,11 +156,12 @@ class _OnboardingSheetState extends State<OnboardingSheet> with WidgetsBindingOb
   }
 
   Widget _buildScreen1(BuildContext context, AppLocalizations l10n) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -185,7 +186,7 @@ class _OnboardingSheetState extends State<OnboardingSheet> with WidgetsBindingOb
               height: 1.5,
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 36),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
@@ -208,7 +209,7 @@ class _OnboardingSheetState extends State<OnboardingSheet> with WidgetsBindingOb
   Widget _buildScreen2(BuildContext context, AppLocalizations l10n) {
     final vm = context.watch<HomeViewModel>();
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,7 +394,7 @@ class _OnboardingSheetState extends State<OnboardingSheet> with WidgetsBindingOb
             ],
           ),
 
-          const Spacer(),
+          const SizedBox(height: 24),
 
           SizedBox(
             width: double.infinity,

@@ -135,10 +135,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAboutDesc =>
-      'Open-source mobile data monitor with live status bar meter.';
+      'Offline mobile data monitor with live status bar speed meter.';
 
   @override
-  String get settingsLicense => 'MIT License · Elmahdi Dev';
+  String get settingsLicense => 'MIT License · Developed by Elmahdi Dev';
 
   @override
   String get commonMb => 'MB';
@@ -202,11 +202,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bundleAutoRenewLabel => 'Auto-renew when period ends';
 
   @override
-  String get onboardingWhyTitle => 'Why does MEGA need this access?';
+  String get onboardingWhyTitle => 'Accurate Mobile Data Tracking';
 
   @override
   String get onboardingWhyDesc =>
-      'MEGA reads your data consumption directly from system stats. Ad-free, login-free, tracker-free, and 100% offline-first on your device.';
+      'MEGA tracks your remaining mobile data and daily safe pace. Lightweight, ad-free, and works completely offline on your device.';
 
   @override
   String get onboardingGrantButton => 'Grant Usage Access';
@@ -234,33 +234,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveNotificationBatteryHelp => 'If Live Notification Disappears';
 
   @override
-  String get onboardingPermissionsTitle => 'Required Permissions for MEGA';
+  String get onboardingPermissionsTitle => 'App Permissions';
 
   @override
   String get onboardingPermissionsDesc =>
-      'MEGA requires usage statistics and notification access to display the real-time speed meter in your status bar and calculate bundle usage accurately:';
+      'MEGA reads device system statistics locally without connecting to external servers:';
 
   @override
-  String get onboardingUsagePermTitle => 'Data Usage Access';
+  String get onboardingUsagePermTitle => 'Usage Access (Required)';
 
   @override
   String get onboardingUsagePermDesc =>
-      'To calculate local cellular and Wi-Fi bundle consumption directly from system kernel.';
+      'To accurately track mobile data and Wi-Fi usage directly from Android.';
 
   @override
-  String get onboardingNotifPermTitle => 'Notifications & Status Bar';
+  String get onboardingNotifPermTitle => 'Notifications (Optional)';
 
   @override
   String get onboardingNotifPermDesc =>
-      'To display the real-time status bar speed icon and receive threshold alerts.';
+      'To show the status bar speed meter and warn you before your bundle runs out.';
 
   @override
-  String get onboardingPermGranted => 'Enabled';
+  String get onboardingPermGranted => 'Active';
 
   @override
-  String get onboardingPermGrantAction => 'Enable Access';
+  String get onboardingPermGrantAction => 'Enable';
 
   @override
   String get onboardingAutoStartLiveNotice =>
-      'Real-time status bar speed meter will be enabled automatically.';
+      'You can customize or disable the status bar speed meter anytime in Settings.';
 }
