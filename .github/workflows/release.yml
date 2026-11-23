@@ -1,4 +1,4 @@
-name: release-arm64
+name: release
 
 on:
   push:
@@ -47,6 +47,12 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+
+      - name: Resolve app version
+        id: app_version
+        run: |
+          APP_VER=$(grep '^version:' pubspec.yaml | head -n 1 | awk '{print $2}')
+          echo "version=$APP_VER" >> $GITHUB_OUTPUT
 
       - name: Prepare signing
         env:
@@ -128,16 +134,16 @@ jobs:
       - name: Upload arm64 release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-arm64-v8a-release
+          name: mega-v${{ steps.app_version.outputs.version }}-arm64-apk
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          retention-days: 30
+          retention-days: 7
 
       - name: Upload release App Bundle (AAB)
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-aab
+          name: mega-v${{ steps.app_version.outputs.version }}-aab
           path: build/app/outputs/bundle/release/app-release.aab
-          retention-days: 30
+          retention-days: 7
 
       - name: Publish to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')

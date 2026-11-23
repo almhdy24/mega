@@ -263,10 +263,10 @@ class LiveMonitorService : Service() {
             val startOfDay = cal.timeInMillis
 
             val range = UsageQuery.range(this, startOfDay, now)
-            val mobileDaily = range["mobile"] as? Map<*, *>
-            val rx = (mobileDaily?.get("rx") as? Number)?.toLong() ?: 0L
-            val tx = (mobileDaily?.get("tx") as? Number)?.toLong() ?: 0L
-            cachedTodayMobileBytes = rx + tx
+            val dailyMobile = UsageQuery.parseMobileBytes(range)
+            if (dailyMobile != null) {
+                cachedTodayMobileBytes = dailyMobile
+            }
 
             // Compute bundle remaining
             val prefs = Prefs.get(this)
@@ -278,11 +278,10 @@ class LiveMonitorService : Service() {
             if (bundleBytes > 0 && bundleStartMs > 0) {
                 val period = BundlePeriod.compute(bundleStartMs, validityDays, autoRenew, now)
                 val periodRange = UsageQuery.range(this, period.startMs, now)
-                val periodMobile = periodRange["mobile"] as? Map<*, *>
-                val pRx = (periodMobile?.get("rx") as? Number)?.toLong() ?: 0L
-                val pTx = (periodMobile?.get("tx") as? Number)?.toLong() ?: 0L
-                val usedInPeriod = pRx + pTx
-                cachedBundleRemainingBytes = (bundleBytes - usedInPeriod).coerceAtLeast(0L)
+                val periodMobile = UsageQuery.parseMobileBytes(periodRange)
+                if (periodMobile != null) {
+                    cachedBundleRemainingBytes = (bundleBytes - periodMobile).coerceAtLeast(0L)
+                }
                 cachedDaysLeft = period.daysLeft(now)
             } else {
                 cachedBundleRemainingBytes = 0L
@@ -306,19 +305,7 @@ class LiveMonitorService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // Action 1: Open Speed Test Tab
-        val speedIntent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("tab", "speed")
-        }
-        val speedPending = PendingIntent.getActivity(
-            this,
-            2,
-            speedIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        // Action 2: Stop Service
+        // Stop Service Action
         val stopIntent = Intent(this, LiveMonitorService::class.java).apply {
             action = ACTION_STOP
         }
@@ -338,7 +325,6 @@ class LiveMonitorService : Service() {
             .setShowWhen(false)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .addAction(0, "فحص السرعة", speedPending)
             .addAction(0, "إيقاف", stopPending)
 
         // Set Dynamic Icon or Static Icon

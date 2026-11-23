@@ -19,12 +19,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navHome => 'الرئيسية';
 
   @override
-  String get navSpeedTest => 'اختبار السرعة';
-
-  @override
-  String get navUsage => 'الاستهلاك';
-
-  @override
   String get navSettings => 'الإعدادات';
 
   @override
@@ -62,53 +56,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get homeSetBundle =>
       'اضبط حجم باقتك وتاريخ تجديدها في الإعدادات لمتابعة المتبقي';
-
-  @override
-  String get homeLastSpeed => 'آخر اختبار سرعة';
-
-  @override
-  String get homeSpeedUnavailable => 'لا يوجد اختبار سرعة سابق';
-
-  @override
-  String get speedStart => 'بدء الاختبار';
-
-  @override
-  String get speedTesting => 'جاري الاختبار...';
-
-  @override
-  String get speedCancel => 'إلغاء';
-
-  @override
-  String get speedPing => 'الاستجابة';
-
-  @override
-  String get speedJitter => 'التذبذب';
-
-  @override
-  String get speedDownload => 'التحميل';
-
-  @override
-  String get speedUpload => 'الرفع';
-
-  @override
-  String get speedHistory => 'سجل الاختبارات';
-
-  @override
-  String get speedNoHistory => 'لا توجد اختبارات سابقة';
-
-  @override
-  String get speedMobileWarningTitle => 'تنبيه استهلاك البيانات';
-
-  @override
-  String speedMobileWarningBody(String size) {
-    return 'الاختبار يستهلك بيانات إنترنت تقريبية (~$size). هل تريد المتابعة؟';
-  }
-
-  @override
-  String get speedProceed => 'متابعة';
-
-  @override
-  String get speedFailed => 'تعذر إجراء الاختبار. تحقق من الاتصال والخادم.';
 
   @override
   String get usageToday => 'اليوم';
@@ -152,7 +99,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get usagePermissionMissing => 'مطلوب تفعيل الإذن';
 
   @override
-  String get settingsBundleSize => 'حجم الباقة (ميجابايت)';
+  String get settingsBundleSize => 'حجم الباقة (جيجابايت)';
 
   @override
   String get settingsCycleStart => 'يوم بداية الدورة';
@@ -185,9 +132,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsLanguage => 'اللغة';
 
   @override
-  String get settingsServer => 'خادم الاختبار';
-
-  @override
   String get settingsUsagePermission => 'إذن إحصائيات الاستخدام';
 
   @override
@@ -195,7 +139,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsAboutDesc =>
-      'تطبيق مفتوح المصدر لمراقبة استهلاك البيانات وفحص سرعة الاتصال بدقة واستهلاك بيانات منخفض.';
+      'تطبيق مفتوح المصدر لمراقبة استهلاك باقات البيانات مع عداد حي في شريط الحالة.';
 
   @override
   String get settingsLicense => 'ترخيص MIT · المهدي ديف';
@@ -234,9 +178,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeRenewBundleNow => 'تجديد الباقة الآن';
-
-  @override
-  String get homeQuickTest => 'فحص سريع';
 
   @override
   String get homeBundleExpired => 'انتهت الباقة';
@@ -282,24 +223,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingStartUsing => 'ابدأ استخدام ميقا';
-
-  @override
-  String get speedServer => 'خادم الفحص';
-
-  @override
-  String get speedModeQuick => 'سريع (~4 ميجابايت)';
-
-  @override
-  String get speedModeFull => 'كامل (~20 ميجابايت)';
-
-  @override
-  String get speedStabilityExcellent => 'ممتاز';
-
-  @override
-  String get speedStabilityGood => 'مستقر';
-
-  @override
-  String get speedStabilityUnstable => 'متذبذب';
 
   @override
   String get liveNotificationTitle => 'الإشعار الحي وعداد السرعة';

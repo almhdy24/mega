@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/platform/live_monitor_channel.dart';
@@ -6,22 +5,17 @@ import '../../../core/platform/usage_channel.dart';
 import '../../../core/prefs/settings_store.dart';
 import '../../../core/time/bundle_period.dart';
 import '../../../core/time/day_range.dart';
-import '../../speedtest/data/speed_test_engine.dart';
-import '../../speedtest/data/speedtest_repository.dart';
-import '../../speedtest/domain/speed_server.dart';
-import '../../speedtest/domain/speed_test_record.dart';
 import '../../usage/data/usage_repository.dart';
+import '../../usage/domain/daily_usage.dart';
 import '../../usage/domain/past_bundle.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final UsageRepository usageRepository;
-  final SpeedTestRepository speedRepository;
   final SettingsStore settings;
   final UsageSource? usageSource;
 
   HomeViewModel({
     required this.usageRepository,
-    required this.speedRepository,
     required this.settings,
     this.usageSource,
   });
@@ -29,11 +23,17 @@ class HomeViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  Future<void>? _activeRefreshFuture;
+  bool _hasQueuedRefresh = false;
+
   bool _hasAccess = true;
   bool get hasAccess => _hasAccess;
 
   bool _hasNotificationAccess = true;
   bool get hasNotificationAccess => _hasNotificationAccess;
+
+  UsageResultStatus _syncStatus = UsageResultStatus.ok;
+  UsageResultStatus get syncStatus => _syncStatus;
 
   int _usedMobileBytes = 0;
   int get usedMobileBytes => _usedMobileBytes;
@@ -47,8 +47,14 @@ class HomeViewModel extends ChangeNotifier {
   int _todayWifiBytes = 0;
   int get todayWifiBytes => _todayWifiBytes;
 
-  SpeedTestRecord? _lastSpeed;
-  SpeedTestRecord? get lastSpeedResult => _lastSpeed;
+  int _historyDays = 7;
+  int get historyDays => _historyDays;
+
+  List<DailyUsage> _historyData = const [];
+  List<DailyUsage> get historyData => _historyData;
+
+  int get historyMobileTotal => _historyData.fold(0, (sum, d) => sum + d.mobileTotal);
+  int get historyWifiTotal => _historyData.fold(0, (sum, d) => sum + d.wifiTotal);
 
   BundlePeriod _period = BundlePeriod(
     start: DateTime.now(),
@@ -80,18 +86,56 @@ class HomeViewModel extends ChangeNotifier {
         now: DateTime.now(),
       );
 
-  // Quick Speed Test state on Home
-  SpeedTestEngine? _quickEngine;
-  StreamSubscription<SpeedTestProgress>? _quickSub;
-  SpeedTestProgress? _quickProgress;
-  SpeedTestProgress? get quickProgress => _quickProgress;
-  bool _isQuickTesting = false;
-  bool get isQuickTesting => _isQuickTesting;
+  DateTime? get lastSyncDateTime {
+    if (settings.lastFullSyncMs <= 0) return null;
+    return DateTime.fromMillisecondsSinceEpoch(settings.lastFullSyncMs);
+  }
+
+  bool get isDataOutdated {
+    if (settings.lastFullSyncMs <= 0) return true;
+    final diff = DateTime.now().millisecondsSinceEpoch - settings.lastFullSyncMs;
+    return diff > (24 * 60 * 60 * 1000);
+  }
+
+  Future<void> setHistoryDays(int days) async {
+    if (_historyDays == days && _historyData.isNotEmpty) return;
+    _historyDays = days;
+    _historyData = await usageRepository.getDailyHistory(days: days, referenceNow: DateTime.now());
+    notifyListeners();
+  }
+
+  Future<void> openSettings() async {
+    await usageRepository.usageSource.openAccessSettings();
+  }
 
   Future<void> refresh() async {
+    if (_activeRefreshFuture != null) {
+      _hasQueuedRefresh = true;
+      await _activeRefreshFuture;
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
 
+    _activeRefreshFuture = _executeRefreshLoop();
+    try {
+      await _activeRefreshFuture;
+    } finally {
+      _activeRefreshFuture = null;
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _executeRefreshLoop() async {
+    do {
+      _hasQueuedRefresh = false;
+      await _performRefresh();
+    } while (_hasQueuedRefresh);
+  }
+
+  Future<void> _performRefresh() async {
     try {
       _hasAccess = await usageRepository.usageSource.hasAccess();
       _hasNotificationAccess = await LiveMonitorChannel.hasNotificationPermission();
@@ -111,30 +155,56 @@ class HomeViewModel extends ChangeNotifier {
         settings.bundleStartMs = now.millisecondsSinceEpoch;
       }
 
-      // Compute current period
+      // Synchronize usage from Android system first if access is granted
+      if (_hasAccess) {
+        _syncStatus = await usageRepository.syncAdaptive(
+          lastFullSyncMs: settings.lastFullSyncMs,
+          onFullSyncSuccess: (ms) => settings.lastFullSyncMs = ms,
+          referenceNow: now,
+        );
+      } else {
+        _syncStatus = UsageResultStatus.denied;
+      }
+
+      // Handle bundle auto-renew rollover across all completed periods
+      if (settings.bundleAutoRenew &&
+          settings.bundleBytes > 0 &&
+          settings.bundleStartMs > 0) {
+        final validityDays = max(1, settings.bundleValidityDays);
+        final validityDuration = Duration(days: validityDays);
+        var curStart = DateTime.fromMillisecondsSinceEpoch(settings.bundleStartMs);
+        var curEnd = curStart.add(validityDuration);
+        var curId = settings.bundleId;
+
+        while (now.isAfter(curEnd) || now.isAtSameMomentAs(curEnd)) {
+          // Query usage for the completed period (mobile only, wifi excluded)
+          final totals = await usageRepository.getTotalsForRange(curStart, curEnd);
+
+          await usageRepository.savePastBundle(PastBundle(
+            id: curId,
+            startMs: curStart.millisecondsSinceEpoch,
+            endMs: curEnd.millisecondsSinceEpoch,
+            sizeBytes: totalBundleBytes,
+            usedBytes: totals.mobileTotal,
+          ));
+
+          curStart = curEnd;
+          curEnd = curStart.add(validityDuration);
+          curId++;
+
+          // Update settings after successful archival of this period
+          settings.bundleStartMs = curStart.millisecondsSinceEpoch;
+          settings.bundleId = curId;
+        }
+      }
+
+      // Compute current active period
       _period = BundlePeriod.compute(
         startMs: settings.bundleStartMs,
         validityDays: settings.bundleValidityDays,
         autoRenew: settings.bundleAutoRenew,
         now: now,
       );
-
-      // If auto-renew rolled over to a new start date, update settings
-      if (settings.bundleAutoRenew &&
-          _period.start.millisecondsSinceEpoch != settings.bundleStartMs &&
-          settings.bundleStartMs > 0) {
-        // Record completed bundle to past bundles table
-        await usageRepository.savePastBundle(PastBundle(
-          id: settings.bundleId,
-          startMs: settings.bundleStartMs,
-          endMs: _period.start.millisecondsSinceEpoch,
-          sizeBytes: totalBundleBytes,
-          usedBytes: _usedMobileBytes,
-        ));
-
-        settings.bundleStartMs = _period.start.millisecondsSinceEpoch;
-        settings.bundleId = settings.bundleId + 1;
-      }
 
       // Query usage in current bundle period
       final totals = await usageRepository.getTotalsForRange(_period.start, _period.end);
@@ -148,80 +218,29 @@ class HomeViewModel extends ChangeNotifier {
       _todayMobileBytes = todayTotals.mobileTotal;
       _todayWifiBytes = todayTotals.wifiTotal;
 
-      // Query latest speed test
-      _lastSpeed = await speedRepository.getLatest();
+      // Query history for selected period (7 or 30 days)
+      _historyData = await usageRepository.getDailyHistory(days: _historyDays, referenceNow: now);
     } catch (_) {
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      _syncStatus = UsageResultStatus.error;
     }
   }
 
   Future<void> renewBundleNow({int? newBytes, int? newValidityDays}) async {
     final now = DateTime.now();
-    // Archive current period
+    // Archive current period with actual mobile usage
     if (settings.bundleBytes > 0 && settings.bundleStartMs > 0) {
+      final start = DateTime.fromMillisecondsSinceEpoch(settings.bundleStartMs);
+      final totals = await usageRepository.getTotalsForRange(start, now);
       await usageRepository.savePastBundle(PastBundle(
         id: settings.bundleId,
         startMs: settings.bundleStartMs,
         endMs: now.millisecondsSinceEpoch,
         sizeBytes: totalBundleBytes,
-        usedBytes: _usedMobileBytes,
+        usedBytes: totals.mobileTotal,
       ));
     }
 
     settings.renewBundleNow(newBytes: newBytes, newValidityDays: newValidityDays);
     await refresh();
-  }
-
-  Future<void> runQuickTest() async {
-    if (_isQuickTesting) return;
-    _isQuickTesting = true;
-    _quickProgress = const SpeedTestProgress(phase: SpeedTestPhase.pinging, progressPercent: 0.05);
-    notifyListeners();
-
-    _quickEngine = SpeedTestEngine();
-    _quickSub = _quickEngine!.progressStream.listen((p) async {
-      _quickProgress = p;
-      notifyListeners();
-
-      if (p.phase == SpeedTestPhase.completed) {
-        final netType = await usageRepository.usageSource.networkType();
-        final record = SpeedTestRecord(
-          ts: DateTime.now().millisecondsSinceEpoch,
-          pingMs: p.pingMs,
-          jitterMs: p.jitterMs,
-          downMbps: p.downMbps,
-          upMbps: p.upMbps,
-          networkType: netType,
-          server: p.server?.name ?? settings.selectedServer.name,
-        );
-        await speedRepository.insertTest(record);
-        _lastSpeed = record;
-        _isQuickTesting = false;
-        notifyListeners();
-      } else if (p.phase == SpeedTestPhase.failed || p.phase == SpeedTestPhase.cancelled) {
-        _isQuickTesting = false;
-        notifyListeners();
-      }
-    });
-
-    await _quickEngine!.runTest(
-      server: settings.selectedServer,
-      mode: SpeedTestMode.quick,
-    );
-  }
-
-  void cancelQuickTest() {
-    _quickEngine?.cancel();
-    _isQuickTesting = false;
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _quickSub?.cancel();
-    _quickEngine?.dispose();
-    super.dispose();
   }
 }

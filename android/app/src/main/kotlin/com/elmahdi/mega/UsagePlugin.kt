@@ -184,6 +184,22 @@ object UsageQuery {
         )
     }
 
+    fun parseMobileBytes(rangeResult: Map<String, Any>?): Long? {
+        if (rangeResult == null) return null
+        val supported = rangeResult["mobileSupported"] as? Boolean ?: true
+        if (!supported) return null
+        val rx = (rangeResult["mobileRx"] as? Number)?.toLong() ?: 0L
+        val tx = (rangeResult["mobileTx"] as? Number)?.toLong() ?: 0L
+        return (rx + tx).coerceAtLeast(0L)
+    }
+
+    fun parseWifiBytes(rangeResult: Map<String, Any>?): Long? {
+        if (rangeResult == null) return null
+        val rx = (rangeResult["wifiRx"] as? Number)?.toLong() ?: 0L
+        val tx = (rangeResult["wifiTx"] as? Number)?.toLong() ?: 0L
+        return (rx + tx).coerceAtLeast(0L)
+    }
+
     fun topApps(ctx: Context, startMs: Long, endMs: Long, limit: Int = 10): List<Map<String, Any>> {
         val nsm = ctx.getSystemService(Context.NETWORK_STATS_SERVICE) as? NetworkStatsManager ?: return emptyList()
         if (Build.VERSION.SDK_INT < 28) return emptyList()

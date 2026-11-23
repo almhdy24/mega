@@ -45,4 +45,9 @@ final List<Migration> migrations = [
     ''');
     await db.execute('CREATE INDEX idx_bundles_end ON bundles(end_ms DESC);');
   },
+
+  // Version 3: Clean up deprecated speed_tests table
+  (Database db) async {
+    await db.execute('DROP TABLE IF EXISTS speed_tests;');
+  },
 ];

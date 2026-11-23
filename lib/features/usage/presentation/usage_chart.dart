@@ -18,7 +18,7 @@ class UsageBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (data.isEmpty) {
       return Container(
-        height: 180,
+        height: 150,
         alignment: Alignment.center,
         child: Text(
           isArabic ? 'لا توجد بيانات كافية للرسم البياني' : 'No usage data available',
@@ -33,7 +33,7 @@ class UsageBarChart extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SizedBox(
-      height: 200,
+      height: 150,
       child: CustomPaint(
         painter: _UsageChartPainter(
           data: data,
@@ -156,8 +156,11 @@ class _UsageChartPainter extends CustomPainter {
         canvas.drawRRect(wifiRect, wifiPaint);
       }
 
-      // Draw date labels every ~7 days or for start/end
-      if (i == 0 || i == count - 1 || i % 7 == 0) {
+      // Draw date labels for first day, last day, and intermediate 7-day intervals
+      // Avoid interval labels too close (< 4 days) to start or end boundaries to prevent collision
+      final isBoundary = (i == 0 || i == count - 1);
+      final isInterval = (i % 7 == 0 && i >= 4 && (count - 1 - i) >= 4);
+      if (isBoundary || isInterval) {
         final dayParts = item.day.split('-');
         final dayLabel = dayParts.length == 3 ? '${dayParts[1]}/${dayParts[2]}' : item.day;
 

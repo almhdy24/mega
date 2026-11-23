@@ -4,8 +4,6 @@ import '../core/prefs/settings_store.dart';
 import '../features/onboarding/presentation/onboarding_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../features/home/presentation/home_screen.dart';
-import '../features/speedtest/presentation/speedtest_screen.dart';
-import '../features/usage/presentation/usage_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 
 class ShellScreen extends StatefulWidget {
@@ -31,8 +29,6 @@ class _ShellScreenState extends State<ShellScreen> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    SpeedTestScreen(),
-    UsageScreen(),
     SettingsScreen(),
   ];
 
@@ -57,16 +53,6 @@ class _ShellScreenState extends State<ShellScreen> {
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home),
             label: l10n.navHome,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.speed_outlined),
-            selectedIcon: const Icon(Icons.speed),
-            label: l10n.navSpeedTest,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.data_usage_outlined),
-            selectedIcon: const Icon(Icons.data_usage),
-            label: l10n.navUsage,
           ),
           NavigationDestination(
             icon: const Icon(Icons.settings_outlined),

@@ -61,13 +61,11 @@ class UsageWorker(
         }.timeInMillis
 
         val dailyRange = UsageQuery.range(ctx, startOfDay, nowMs)
-        val todayMobile = ((dailyRange["mobileRx"] as? Number)?.toLong() ?: 0L) +
-                ((dailyRange["mobileTx"] as? Number)?.toLong() ?: 0L)
+        val todayMobile = UsageQuery.parseMobileBytes(dailyRange) ?: 0L
 
         val periodMobile = if (bundleInfo != null) {
             val periodRange = UsageQuery.range(ctx, bundleInfo.startMs, nowMs)
-            ((periodRange["mobileRx"] as? Number)?.toLong() ?: 0L) +
-                    ((periodRange["mobileTx"] as? Number)?.toLong() ?: 0L)
+            UsageQuery.parseMobileBytes(periodRange) ?: 0L
         } else {
             0L
         }
@@ -75,8 +73,7 @@ class UsageWorker(
         // Last hour usage
         val oneHourAgo = nowMs - (3600 * 1000L)
         val lastHourRange = UsageQuery.range(ctx, oneHourAgo, nowMs)
-        val lastHourMobile = ((lastHourRange["mobileRx"] as? Number)?.toLong() ?: 0L) +
-                ((lastHourRange["mobileTx"] as? Number)?.toLong() ?: 0L)
+        val lastHourMobile = UsageQuery.parseMobileBytes(lastHourRange) ?: 0L
 
         val snapshot = UsageSnapshotData(
             todayMobileBytes = todayMobile,

@@ -116,18 +116,6 @@ abstract class AppLocalizations {
   /// **'Home'**
   String get navHome;
 
-  /// No description provided for @navSpeedTest.
-  ///
-  /// In en, this message translates to:
-  /// **'Speed Test'**
-  String get navSpeedTest;
-
-  /// No description provided for @navUsage.
-  ///
-  /// In en, this message translates to:
-  /// **'Usage'**
-  String get navUsage;
-
   /// No description provided for @navSettings.
   ///
   /// In en, this message translates to:
@@ -175,96 +163,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Set up your bundle in Settings to track remaining data'**
   String get homeSetBundle;
-
-  /// No description provided for @homeLastSpeed.
-  ///
-  /// In en, this message translates to:
-  /// **'Last speed test'**
-  String get homeLastSpeed;
-
-  /// No description provided for @homeSpeedUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'No speed tests recorded yet'**
-  String get homeSpeedUnavailable;
-
-  /// No description provided for @speedStart.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Test'**
-  String get speedStart;
-
-  /// No description provided for @speedTesting.
-  ///
-  /// In en, this message translates to:
-  /// **'Testing...'**
-  String get speedTesting;
-
-  /// No description provided for @speedCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get speedCancel;
-
-  /// No description provided for @speedPing.
-  ///
-  /// In en, this message translates to:
-  /// **'Ping'**
-  String get speedPing;
-
-  /// No description provided for @speedJitter.
-  ///
-  /// In en, this message translates to:
-  /// **'Jitter'**
-  String get speedJitter;
-
-  /// No description provided for @speedDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Download'**
-  String get speedDownload;
-
-  /// No description provided for @speedUpload.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload'**
-  String get speedUpload;
-
-  /// No description provided for @speedHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Test History'**
-  String get speedHistory;
-
-  /// No description provided for @speedNoHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'No tests recorded yet'**
-  String get speedNoHistory;
-
-  /// No description provided for @speedMobileWarningTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Data Consumption Warning'**
-  String get speedMobileWarningTitle;
-
-  /// No description provided for @speedMobileWarningBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Running a speed test consumes mobile data (~{size}). Do you want to proceed?'**
-  String speedMobileWarningBody(String size);
-
-  /// No description provided for @speedProceed.
-  ///
-  /// In en, this message translates to:
-  /// **'Proceed'**
-  String get speedProceed;
-
-  /// No description provided for @speedFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Test failed. Please check connection and server.'**
-  String get speedFailed;
 
   /// No description provided for @usageToday.
   ///
@@ -347,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsBundleSize.
   ///
   /// In en, this message translates to:
-  /// **'Bundle Size (MB)'**
+  /// **'Bundle Size (GB)'**
   String get settingsBundleSize;
 
   /// No description provided for @settingsCycleStart.
@@ -404,12 +302,6 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsLanguage;
 
-  /// No description provided for @settingsServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Test Server URL'**
-  String get settingsServer;
-
   /// No description provided for @settingsUsagePermission.
   ///
   /// In en, this message translates to:
@@ -425,7 +317,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAboutDesc.
   ///
   /// In en, this message translates to:
-  /// **'Open-source data monitor and lightweight network speed test.'**
+  /// **'Open-source mobile data monitor with live status bar meter.'**
   String get settingsAboutDesc;
 
   /// No description provided for @settingsLicense.
@@ -499,12 +391,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Renew bundle now'**
   String get homeRenewBundleNow;
-
-  /// No description provided for @homeQuickTest.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick Test'**
-  String get homeQuickTest;
 
   /// No description provided for @homeBundleExpired.
   ///
@@ -589,42 +475,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start Using MEGA'**
   String get onboardingStartUsing;
-
-  /// No description provided for @speedServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Test Server'**
-  String get speedServer;
-
-  /// No description provided for @speedModeQuick.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick (~4 MB)'**
-  String get speedModeQuick;
-
-  /// No description provided for @speedModeFull.
-  ///
-  /// In en, this message translates to:
-  /// **'Full (~20 MB)'**
-  String get speedModeFull;
-
-  /// No description provided for @speedStabilityExcellent.
-  ///
-  /// In en, this message translates to:
-  /// **'Excellent'**
-  String get speedStabilityExcellent;
-
-  /// No description provided for @speedStabilityGood.
-  ///
-  /// In en, this message translates to:
-  /// **'Good'**
-  String get speedStabilityGood;
-
-  /// No description provided for @speedStabilityUnstable.
-  ///
-  /// In en, this message translates to:
-  /// **'Unstable'**
-  String get speedStabilityUnstable;
 
   /// No description provided for @liveNotificationTitle.
   ///

@@ -167,7 +167,7 @@ class _OnboardingSheetState extends State<OnboardingSheet> with WidgetsBindingOb
               color: MegaColors.primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.speed, size: 56, color: MegaColors.primary),
+            child: const Icon(Icons.signal_cellular_alt, size: 56, color: MegaColors.primary),
           ),
           const SizedBox(height: 24),
           Text(

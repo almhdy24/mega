@@ -8,10 +8,7 @@ import 'core/db/database.dart';
 import 'core/platform/usage_channel.dart';
 import 'core/prefs/settings_store.dart';
 import 'features/home/presentation/home_view_model.dart';
-import 'features/speedtest/data/speedtest_repository.dart';
-import 'features/speedtest/presentation/speedtest_view_model.dart';
 import 'features/usage/data/usage_repository.dart';
-import 'features/usage/presentation/usage_view_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +30,6 @@ void main() async {
 
     final usageSource = PlatformUsageSource();
     final usageRepository = UsageRepository(db: db, usageSource: usageSource);
-    final speedTestRepository = SpeedTestRepository(db: db);
 
     // If alerts are enabled and bundle is configured, schedule WorkManager
     if (settingsStore.alertsEnabled && settingsStore.bundleBytes > 0) {
@@ -45,24 +41,9 @@ void main() async {
         providers: [
           ChangeNotifierProvider<SettingsStore>.value(value: settingsStore),
           Provider<UsageRepository>.value(value: usageRepository),
-          Provider<SpeedTestRepository>.value(value: speedTestRepository),
           ChangeNotifierProvider<HomeViewModel>(
             create: (_) => HomeViewModel(
               usageRepository: usageRepository,
-              speedRepository: speedTestRepository,
-              settings: settingsStore,
-              usageSource: usageSource,
-            ),
-          ),
-          ChangeNotifierProvider<UsageViewModel>(
-            create: (_) => UsageViewModel(
-              repository: usageRepository,
-              settings: settingsStore,
-            ),
-          ),
-          ChangeNotifierProvider<SpeedTestViewModel>(
-            create: (_) => SpeedTestViewModel(
-              repository: speedTestRepository,
               settings: settingsStore,
               usageSource: usageSource,
             ),

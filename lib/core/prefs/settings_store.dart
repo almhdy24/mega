@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../features/speedtest/domain/speed_server.dart';
 import '../time/billing_cycle.dart';
 
 class SettingsStore extends ChangeNotifier {
@@ -22,13 +21,8 @@ class SettingsStore extends ChangeNotifier {
   static const String keyAlertsEnabled = 'alerts_enabled';
   static const String keyThemeMode = 'theme_mode';
   static const String keyLocale = 'locale';
-  static const String keyTestBaseUrl = 'test_base_url';
-  static const String keyTestServerId = 'test_server_id';
-  static const String keyTestCustomUrl = 'test_custom_url';
-  static const String keyTestMode = 'test_mode';
   static const String keyNotifiedCycleStart = 'notified_cycle_start';
   static const String keyNotifiedThresholds = 'notified_thresholds';
-  static const String keySkipMobileWarning = 'skip_mobile_warning';
   static const String keyLastFullSyncMs = 'last_full_sync_ms';
 
   // Live Monitor Keys
@@ -43,8 +37,6 @@ class SettingsStore extends ChangeNotifier {
   static const String keyLiveMonitorStartBoot = 'live_monitor_start_boot';
   static const String keyLiveMonitorFields = 'live_monitor_fields';
   static const String keyHasSeenOnboarding = 'has_seen_onboarding';
-
-  static const String defaultTestBaseUrl = 'https://fra.speedtest.clouvider.net/backend';
 
   void _migrateLegacyCycleStartDay() {
     if (_prefs.containsKey(keyCycleStartDay) && !_prefs.containsKey(keyBundleStartMs)) {
@@ -162,54 +154,6 @@ class SettingsStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  String get testBaseUrl => _prefs.getString(keyTestBaseUrl) ?? defaultTestBaseUrl;
-  set testBaseUrl(String value) {
-    _prefs.setString(keyTestBaseUrl, value.trim());
-    notifyListeners();
-  }
-
-  String get testServerId => _prefs.getString(keyTestServerId) ?? 'auto';
-  set testServerId(String value) {
-    _prefs.setString(keyTestServerId, value);
-    notifyListeners();
-  }
-
-  String get testCustomUrl => _prefs.getString(keyTestCustomUrl) ?? '';
-  set testCustomUrl(String value) {
-    _prefs.setString(keyTestCustomUrl, value.trim());
-    notifyListeners();
-  }
-
-  SpeedServer get selectedServer {
-    final server = SpeedServers.findById(testServerId, customUrl: testCustomUrl);
-    if (server.id == 'custom' && testCustomUrl.isNotEmpty) {
-      return server.copyWith(baseUrl: testCustomUrl);
-    }
-    return server;
-  }
-
-  set selectedServer(SpeedServer server) {
-    _prefs.setString(keyTestServerId, server.id);
-    if (server.id == 'custom') {
-      _prefs.setString(keyTestCustomUrl, server.baseUrl);
-    }
-    if (server.baseUrl.isNotEmpty) {
-      _prefs.setString(keyTestBaseUrl, server.baseUrl);
-    }
-    notifyListeners();
-  }
-
-  SpeedTestMode get testMode {
-    final val = _prefs.getString(keyTestMode);
-    if (val == SpeedTestMode.full.name) return SpeedTestMode.full;
-    return SpeedTestMode.quick;
-  }
-
-  set testMode(SpeedTestMode mode) {
-    _prefs.setString(keyTestMode, mode.name);
-    notifyListeners();
-  }
-
   bool get hasSeenOnboarding => _prefs.getBool(keyHasSeenOnboarding) ?? false;
   set hasSeenOnboarding(bool val) {
     _prefs.setBool(keyHasSeenOnboarding, val);
@@ -291,12 +235,6 @@ class SettingsStore extends ChangeNotifier {
   int get notifiedCycleStart => _prefs.getInt(keyNotifiedCycleStart) ?? 0;
   set notifiedCycleStart(int epochMs) {
     _prefs.setInt(keyNotifiedCycleStart, epochMs);
-  }
-
-  bool get skipMobileWarning => _prefs.getBool(keySkipMobileWarning) ?? false;
-  set skipMobileWarning(bool value) {
-    _prefs.setBool(keySkipMobileWarning, value);
-    notifyListeners();
   }
 
   int get lastFullSyncMs => _prefs.getInt(keyLastFullSyncMs) ?? 0;

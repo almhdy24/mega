@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import '../../../core/platform/usage_channel.dart';
 import '../../../core/time/day_range.dart';
@@ -13,10 +14,62 @@ class UsageRepository {
     required this.usageSource,
   });
 
+  Future<UsageResultStatus>? _ongoingSync;
+  int _ongoingSyncDays = 0;
+
+  /// Adaptively synchronizes usage:
+  /// Performs a full 35-day sync if the database is empty or if more than 24 hours
+  /// have passed since [lastFullSyncMs]. Otherwise performs a 2-day sync (today and yesterday).
+  Future<UsageResultStatus> syncAdaptive({
+    required int lastFullSyncMs,
+    void Function(int newFullSyncMs)? onFullSyncSuccess,
+    DateTime? referenceNow,
+  }) async {
+    final now = referenceNow ?? DateTime.now();
+    final isDbEmpty = await isUsageEmpty();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    final shouldFullSync =
+        isDbEmpty || (now.millisecondsSinceEpoch - lastFullSyncMs > oneDayMs);
+    final days = shouldFullSync ? 35 : 2;
+
+    final status = await syncSnapshots(days: days, referenceNow: now);
+    if (shouldFullSync && (status == UsageResultStatus.ok || status == UsageResultStatus.unsupported)) {
+      onFullSyncSuccess?.call(now.millisecondsSinceEpoch);
+    }
+    return status;
+  }
+
   /// Snapshot rule: queries the system for the last [days] days (default 35)
   /// and upserts into usage_daily using MAX(existing, new) per column.
   /// A day that later reads 0 (history expired) will never overwrite a non-zero stored value.
   Future<UsageResultStatus> syncSnapshots({int days = 35, DateTime? referenceNow}) async {
+    final currentSync = _ongoingSync;
+    if (currentSync != null) {
+      if (_ongoingSyncDays >= days) {
+        return currentSync;
+      }
+      // If active sync covers fewer days than requested, wait for it before running the larger sync
+      await currentSync;
+    }
+
+    _ongoingSyncDays = days;
+    final completer = Completer<UsageResultStatus>();
+    _ongoingSync = completer.future;
+
+    try {
+      final status = await _performSyncSnapshots(days: days, referenceNow: referenceNow);
+      completer.complete(status);
+      return status;
+    } catch (e, st) {
+      completer.completeError(e, st);
+      rethrow;
+    } finally {
+      _ongoingSync = null;
+      _ongoingSyncDays = 0;
+    }
+  }
+
+  Future<UsageResultStatus> _performSyncSnapshots({int days = 35, DateTime? referenceNow}) async {
     final hasAccess = await usageSource.hasAccess();
     if (!hasAccess) return UsageResultStatus.denied;
 
@@ -35,6 +88,8 @@ class UsageRepository {
         final result = await usageSource.queryRange(startLocal, endLocal);
         if (result.status != UsageResultStatus.ok && result.status != UsageResultStatus.unsupported) {
           finalStatus = result.status;
+          // Skip upsert on error or denied to avoid inserting zero rows or corrupting updated_at
+          continue;
         } else if (result.status == UsageResultStatus.unsupported && finalStatus == UsageResultStatus.ok) {
           finalStatus = UsageResultStatus.unsupported;
         }
@@ -110,10 +165,11 @@ class UsageRepository {
     );
   }
 
-  /// Get up to last 30 days of usage for the chart (ordered chronologically)
-  Future<List<DailyUsage>> getLast30Days({DateTime? referenceNow}) async {
+  /// Get historical daily usage for the specified number of [days] (ordered chronologically)
+  Future<List<DailyUsage>> getDailyHistory({int days = 30, DateTime? referenceNow}) async {
     final now = referenceNow ?? DateTime.now();
-    final startDay = DayRange.formatDay(now.subtract(const Duration(days: 29)));
+    final count = days.clamp(1, 90);
+    final startDay = DayRange.formatDay(now.subtract(Duration(days: count - 1)));
     final endDay = DayRange.formatDay(now);
 
     final rows = await db.query(
@@ -124,6 +180,11 @@ class UsageRepository {
     );
 
     return rows.map((r) => DailyUsage.fromMap(r)).toList();
+  }
+
+  /// Get up to last 30 days of usage for the chart (ordered chronologically)
+  Future<List<DailyUsage>> getLast30Days({DateTime? referenceNow}) async {
+    return getDailyHistory(days: 30, referenceNow: referenceNow);
   }
 
   /// Save a completed bundle period and keep at most the last 6 entries.

@@ -19,12 +19,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHome => 'Home';
 
   @override
-  String get navSpeedTest => 'Speed Test';
-
-  @override
-  String get navUsage => 'Usage';
-
-  @override
   String get navSettings => 'Settings';
 
   @override
@@ -58,53 +52,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeSetBundle =>
       'Set up your bundle in Settings to track remaining data';
-
-  @override
-  String get homeLastSpeed => 'Last speed test';
-
-  @override
-  String get homeSpeedUnavailable => 'No speed tests recorded yet';
-
-  @override
-  String get speedStart => 'Start Test';
-
-  @override
-  String get speedTesting => 'Testing...';
-
-  @override
-  String get speedCancel => 'Cancel';
-
-  @override
-  String get speedPing => 'Ping';
-
-  @override
-  String get speedJitter => 'Jitter';
-
-  @override
-  String get speedDownload => 'Download';
-
-  @override
-  String get speedUpload => 'Upload';
-
-  @override
-  String get speedHistory => 'Test History';
-
-  @override
-  String get speedNoHistory => 'No tests recorded yet';
-
-  @override
-  String get speedMobileWarningTitle => 'Data Consumption Warning';
-
-  @override
-  String speedMobileWarningBody(String size) {
-    return 'Running a speed test consumes mobile data (~$size). Do you want to proceed?';
-  }
-
-  @override
-  String get speedProceed => 'Proceed';
-
-  @override
-  String get speedFailed => 'Test failed. Please check connection and server.';
 
   @override
   String get usageToday => 'Today';
@@ -148,7 +95,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usagePermissionMissing => 'Access needed';
 
   @override
-  String get settingsBundleSize => 'Bundle Size (MB)';
+  String get settingsBundleSize => 'Bundle Size (GB)';
 
   @override
   String get settingsCycleStart => 'Cycle Start Day';
@@ -181,9 +128,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguage => 'Language';
 
   @override
-  String get settingsServer => 'Test Server URL';
-
-  @override
   String get settingsUsagePermission => 'Usage Stats Permission';
 
   @override
@@ -191,7 +135,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAboutDesc =>
-      'Open-source data monitor and lightweight network speed test.';
+      'Open-source mobile data monitor with live status bar meter.';
 
   @override
   String get settingsLicense => 'MIT License · Elmahdi Dev';
@@ -230,9 +174,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeRenewBundleNow => 'Renew bundle now';
-
-  @override
-  String get homeQuickTest => 'Quick Test';
 
   @override
   String get homeBundleExpired => 'Bundle Expired';
@@ -278,24 +219,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStartUsing => 'Start Using MEGA';
-
-  @override
-  String get speedServer => 'Test Server';
-
-  @override
-  String get speedModeQuick => 'Quick (~4 MB)';
-
-  @override
-  String get speedModeFull => 'Full (~20 MB)';
-
-  @override
-  String get speedStabilityExcellent => 'Excellent';
-
-  @override
-  String get speedStabilityGood => 'Good';
-
-  @override
-  String get speedStabilityUnstable => 'Unstable';
 
   @override
   String get liveNotificationTitle => 'Live Speed & Notification';

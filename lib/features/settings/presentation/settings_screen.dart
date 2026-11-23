@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../app/theme/colors.dart';
+import '../../../core/platform/live_monitor_channel.dart';
 import '../../../core/prefs/settings_store.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/presentation/home_view_model.dart';
-import '../../speedtest/presentation/server_selector_sheet.dart';
 import '../../usage/data/usage_repository.dart';
-import '../../usage/presentation/usage_view_model.dart';
 import 'about_screen.dart';
 import 'live_notification_settings_screen.dart';
 
@@ -35,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextField(
               controller: controller,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
               decoration: InputDecoration(
                 labelText: l10n.commonGb,
                 hintText: 'e.g. 10.0',
@@ -61,6 +62,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final gb = double.tryParse(val) ?? 0.0;
       final bytes = (gb * 1024 * 1024 * 1024).round();
       settings.bundleBytes = bytes;
+      if (bytes > 0 && settings.bundleStartMs <= 0) {
+        settings.bundleStartMs = DateTime.now().millisecondsSinceEpoch;
+      }
 
       final usageRepo = context.read<UsageRepository>();
       if (settings.alertsEnabled && bytes > 0) {
@@ -72,36 +76,83 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _editCycleDay(SettingsStore settings, AppLocalizations l10n) async {
-    final day = await showDialog<int>(
+  Future<void> _pickStartDate(SettingsStore settings, bool isArabic) async {
+    final current = settings.bundleStartMs > 0
+        ? DateTime.fromMillisecondsSinceEpoch(settings.bundleStartMs)
+        : DateTime.now();
+
+    final picked = await showDatePicker(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text(l10n.settingsCycleStart),
-        children: List.generate(31, (i) {
-          final d = i + 1;
-          return SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, d),
-            child: Text(
-              l10n.settingsCycleDay(d),
-              style: TextStyle(
-                fontWeight: d == settings.cycleStartDay ? FontWeight.bold : FontWeight.normal,
-                color: d == settings.cycleStartDay ? MegaColors.primary : null,
-              ),
-            ),
-          );
-        }),
-      ),
+      initialDate: current,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
     );
 
-    if (day != null && mounted) {
-      settings.cycleStartDay = day;
+    if (picked != null && mounted) {
+      settings.bundleStartMs = picked.millisecondsSinceEpoch;
       context.read<HomeViewModel>().refresh();
-      context.read<UsageViewModel>().refresh();
     }
   }
 
-  Future<void> _editServerUrl(SettingsStore settings, AppLocalizations l10n) async {
-    await ServerSelectorSheet.show(context);
+  Future<void> _editValidity(SettingsStore settings, bool isArabic) async {
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(isArabic ? 'مدة صلاحية الباقة' : 'Bundle Validity Period'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 1),
+            child: Text(isArabic ? 'يوم واحد (يومي)' : '1 Day (Daily)'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 7),
+            child: Text(isArabic ? '7 أيام (أسبوعي)' : '7 Days (Weekly)'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 30),
+            child: Text(isArabic ? '30 يوماً (شهري)' : '30 Days (Monthly)'),
+          ),
+          SimpleDialogOption(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final controller = TextEditingController(text: settings.bundleValidityDays.toString());
+              final custom = await showDialog<int>(
+                context: context,
+                builder: (c) => AlertDialog(
+                  title: Text(isArabic ? 'مدة مخصصة بالأيام' : 'Custom Days'),
+                  content: TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: isArabic ? 'الأيام' : 'Days',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(c), child: Text(isArabic ? 'إلغاء' : 'Cancel')),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(c, int.tryParse(controller.text.trim())),
+                      child: Text(isArabic ? 'حفظ' : 'Save'),
+                    ),
+                  ],
+                ),
+              );
+              if (custom != null && custom > 0 && mounted) {
+                settings.bundleValidityDays = custom;
+                context.read<HomeViewModel>().refresh();
+              }
+            },
+            child: Text(isArabic ? 'مدة مخصصة...' : 'Custom Days...'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && mounted) {
+      settings.bundleValidityDays = selected;
+      context.read<HomeViewModel>().refresh();
+    }
   }
 
   @override
@@ -109,12 +160,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final settings = context.watch<SettingsStore>();
-    final usageVm = context.watch<UsageViewModel>();
+    final homeVm = context.watch<HomeViewModel>();
     final usageRepo = context.read<UsageRepository>();
 
     final bundleGb = settings.bundleBytes > 0
         ? '${(settings.bundleBytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} ${l10n.commonGb}'
-        : l10n.homeNoBundle;
+        : (isArabic ? 'لم يتم ضبط باقة' : 'Not configured');
+
+    final startDateStr = settings.bundleStartMs > 0
+        ? DateFormat('d MMMM yyyy', isArabic ? 'ar' : 'en').format(
+            DateTime.fromMillisecondsSinceEpoch(settings.bundleStartMs),
+          )
+        : (isArabic ? 'غير محدد' : 'Not set');
 
     return Scaffold(
       appBar: AppBar(
@@ -123,23 +180,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsetsDirectional.symmetric(vertical: 8),
         children: [
-          // Section: Bundle & Cycle
+          // -------------------------------------------------------------
+          // Group 1: Bundle
+          // -------------------------------------------------------------
+          _buildSectionHeader(isArabic ? 'الباقة' : 'Bundle'),
           ListTile(
-            leading: const Icon(Icons.pie_chart, color: MegaColors.primary),
+            leading: const Icon(Icons.pie_chart_outline, color: MegaColors.primary),
             title: Text(l10n.settingsBundleSize),
             subtitle: Text(bundleGb),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _editBundle(settings, l10n),
           ),
           ListTile(
-            leading: const Icon(Icons.calendar_today, color: MegaColors.primary),
-            title: Text(l10n.settingsCycleStart),
-            subtitle: Text(l10n.settingsCycleDay(settings.cycleStartDay)),
+            leading: const Icon(Icons.calendar_today_outlined, color: MegaColors.primary),
+            title: Text(isArabic ? 'تاريخ بدء الباقة' : 'Start Date'),
+            subtitle: Text(startDateStr),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _editCycleDay(settings, l10n),
+            onTap: () => _pickStartDate(settings, isArabic),
+          ),
+          ListTile(
+            leading: const Icon(Icons.timelapse_outlined, color: MegaColors.primary),
+            title: Text(isArabic ? 'مدة الصلاحية' : 'Validity Period'),
+            subtitle: Text(
+              isArabic
+                  ? '${settings.bundleValidityDays} يوم'
+                  : '${settings.bundleValidityDays} days',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _editValidity(settings, isArabic),
           ),
           SwitchListTile(
-            secondary: const Icon(Icons.notifications_active, color: MegaColors.primary),
+            secondary: const Icon(Icons.autorenew, color: MegaColors.primary),
+            title: Text(isArabic ? 'تجديد الباقة تلقائياً' : 'Auto-Renew'),
+            subtitle: Text(
+              isArabic
+                  ? 'بدء دورة جديدة وأرشفة السابقة عند انتهاء الصلاحية'
+                  : 'Start a new cycle automatically when validity expires',
+              style: const TextStyle(fontSize: 11),
+            ),
+            value: settings.bundleAutoRenew,
+            activeThumbColor: MegaColors.primary,
+            activeTrackColor: MegaColors.primaryContainerLight,
+            onChanged: (val) {
+              settings.bundleAutoRenew = val;
+              homeVm.refresh();
+            },
+          ),
+          const Divider(),
+
+          // -------------------------------------------------------------
+          // Group 2: Monitoring
+          // -------------------------------------------------------------
+          _buildSectionHeader(isArabic ? 'المراقبة والإشعارات' : 'Monitoring'),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_active_outlined, color: MegaColors.primary),
             title: Text(l10n.settingsAlerts),
             subtitle: Text(l10n.settingsAlertsDescription),
             value: settings.alertsEnabled,
@@ -154,12 +248,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.speed, color: MegaColors.primary),
+          SwitchListTile(
+            secondary: const Icon(Icons.speed, color: MegaColors.primary),
             title: Text(l10n.liveNotificationTitle),
-            subtitle: Text(settings.liveMonitorEnabled
-                ? (isArabic ? 'مُفعّل (يعمل في شريط الحالة)' : 'Enabled (Active in status bar)')
-                : (isArabic ? 'متوقف' : 'Disabled')),
+            subtitle: Text(l10n.liveNotificationDesc),
+            value: settings.liveMonitorEnabled,
+            activeThumbColor: MegaColors.primary,
+            activeTrackColor: MegaColors.primaryContainerLight,
+            onChanged: (val) async {
+              settings.liveMonitorEnabled = val;
+              if (val) {
+                final hasNotif = await LiveMonitorChannel.hasNotificationPermission();
+                if (hasNotif) {
+                  await LiveMonitorChannel.start();
+                }
+                homeVm.refresh();
+              } else {
+                await LiveMonitorChannel.stop();
+              }
+              if (mounted) setState(() {});
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.tune, color: MegaColors.primary),
+            title: Text(isArabic ? 'خيارات عرض العداد' : 'Notification Display Options'),
+            subtitle: Text(
+              isArabic
+                  ? 'معدل التحديث، وحدة السرعة، استثناء الواي فاي'
+                  : 'Update interval, speed unit, Wi-Fi filter',
+              style: const TextStyle(fontSize: 11),
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
@@ -170,52 +288,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
 
-          // Section: Preferences
+          // -------------------------------------------------------------
+          // Group 3: App
+          // -------------------------------------------------------------
+          _buildSectionHeader(isArabic ? 'التطبيق' : 'App'),
           ListTile(
-            leading: const Icon(Icons.brightness_6, color: MegaColors.primary),
-            title: Text(l10n.settingsTheme),
-            subtitle: Text(_themeLabel(settings.themeMode, l10n)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _chooseTheme(settings, l10n),
-          ),
-          ListTile(
-            leading: const Icon(Icons.language, color: MegaColors.primary),
+            leading: const Icon(Icons.language_outlined, color: MegaColors.primary),
             title: Text(l10n.settingsLanguage),
             subtitle: Text(settings.locale?.languageCode == 'en' ? 'English' : 'العربية'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _chooseLanguage(settings),
           ),
           ListTile(
-            leading: const Icon(Icons.dns_outlined, color: MegaColors.primary),
-            title: Text(l10n.speedServer),
-            subtitle: Text(
-              settings.selectedServer.localizedName(isArabic),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            leading: const Icon(Icons.brightness_6_outlined, color: MegaColors.primary),
+            title: Text(l10n.settingsTheme),
+            subtitle: Text(_themeLabel(settings.themeMode, l10n)),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _editServerUrl(settings, l10n),
+            onTap: () => _chooseTheme(settings, l10n),
           ),
-          const Divider(),
-
-          // Section: Permissions & Info
           ListTile(
             leading: Icon(
-              usageVm.hasAccess ? Icons.check_circle : Icons.warning_amber_rounded,
-              color: usageVm.hasAccess ? MegaColors.success : MegaColors.warning,
+              homeVm.hasAccess ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+              color: homeVm.hasAccess ? MegaColors.success : MegaColors.warning,
             ),
             title: Text(l10n.settingsUsagePermission),
             subtitle: Text(
-              usageVm.hasAccess ? l10n.usagePermissionGranted : l10n.usagePermissionMissing,
+              homeVm.hasAccess ? l10n.usagePermissionGranted : l10n.usagePermissionMissing,
             ),
             trailing: OutlinedButton(
-              onPressed: () => usageVm.openSettings(),
+              onPressed: () => homeVm.openSettings(),
               child: Text(l10n.usageOpenSettings),
             ),
           ),
-          const Divider(),
-
-          // Section: About
           ListTile(
             leading: const Icon(Icons.info_outline, color: MegaColors.primary),
             title: Text(l10n.settingsAbout),
@@ -233,6 +337,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

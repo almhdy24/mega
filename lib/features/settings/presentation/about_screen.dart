@@ -46,7 +46,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isArabic ? 'الإصدار 1.1.0' : 'Version 1.1.0',
+                    isArabic ? 'الإصدار 1.1.1' : 'Version 1.1.1',
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -55,8 +55,8 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     isArabic
-                        ? 'تطبيق محلي لمراقبة استهلاك باقات الإنترنت وفحص السرعة مع عداد حي في شريط الحالة.'
-                        : 'Offline-first network data monitor and live speed meter for Android.',
+                        ? 'تطبيق محلي خفيف لمراقبة استهلاك باقات الإنترنت مع عداد حي في شريط الحالة.'
+                        : 'Offline-first mobile data monitor and live meter for Android.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 13, height: 1.4),
                   ),
@@ -87,8 +87,8 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     isArabic
-                        ? 'تم تطوير هذا التطبيق لتوفير بديل عملي وخفيف لتطبيقات فحص السرعة ومراقبة البيانات التقليدية التي تستهلك سعات ضخمة من الباقات المحدودة وتحتوي على إعلانات أو أدوات تتبع. التطبيق مجاني، بدون إعلانات، ولا يتطلب أي تسجيل دخول.'
-                        : 'Built to provide a lightweight, ad-free alternative to data tracking and speed testing tools that consume excessive bandwidth on metered connections. Free, tracker-free, and requires no account.',
+                        ? 'تم تطوير هذا التطبيق لتوفير بديل عملي وخفيف لتطبيقات مراقبة البيانات التقليدية التي تحتوي على إعلانات أو أدوات تتبع. التطبيق مجاني، بدون إعلانات، ولا يتطلب أي تسجيل دخول.'
+                        : 'Built to provide a lightweight, ad-free alternative to data tracking tools. Free, tracker-free, and requires no account.',
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.5,
@@ -105,12 +105,6 @@ class AboutScreen extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                _buildInfoTile(
-                  title: isArabic ? 'خادم الفحص المعتمد' : 'Default Speed Server',
-                  value: 'https://almhdy24.com/mega/speedtest.php',
-                  icon: Icons.dns_outlined,
-                ),
-                const Divider(height: 1),
                 _buildInfoTile(
                   title: isArabic ? 'المستودع المفتوح' : 'Source Code',
                   value: 'github.com/almhdy24/mega',
